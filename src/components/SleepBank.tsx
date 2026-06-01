@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text, useWindowDimensions } from 'react-native';
 import Card from './Card';
 import BarChart from './BarChart';
 import { getSleepBank, sleepHistory } from '../data/mockData';
@@ -11,7 +11,8 @@ export default function SleepBank() {
   const last7 = sleepHistory.slice(-7);
   const current = bankData[bankData.length - 1];
   const isPositive = current >= 0;
-  const chartWidth = Dimensions.get('window').width - 72;
+  const { width: screenWidth } = useWindowDimensions();
+  const chartWidth = Math.max(200, Math.min(screenWidth - 72, 450));
 
   const data = last7.map((d, i) => ({
     label: d.dayLabel,

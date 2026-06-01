@@ -54,8 +54,7 @@ export default function GaugeRing({ value, size, color, label }: Props) {
             strokeLinecap="round"
             strokeDasharray={`${circ}`}
             animatedProps={animatedProps}
-            rotation={-90}
-            origin={`${size / 2}, ${size / 2}`}
+            transform={`rotate(-90, ${size / 2}, ${size / 2})`}
           />
         </Svg>
         <View style={{ position: 'absolute' }}>

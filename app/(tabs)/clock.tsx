@@ -22,9 +22,11 @@ export default function ClockScreen() {
   ];
 
   return (
-    <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }}>
+    <View style={{ flex: 1, height: '100%' }}>
+      <LinearGradient colors={theme.bgGradientColors} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <ScrollView
+          style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ padding: 16, paddingBottom: 100, alignItems: 'center' }}
         >
@@ -103,6 +105,6 @@ export default function ClockScreen() {
           </Card>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }

@@ -34,8 +34,9 @@ export default function BarChart({ data, width, height, theme, stacked = false }
   if (maxVal === 0) maxVal = 1;
 
   const hasNegative = !stacked && data.some(d => (d.value || 0) < 0);
-  const barWidth = Math.max(4, (plotW / data.length) * 0.6);
-  const gap = (plotW / data.length) * 0.4;
+  const slotW = plotW / Math.max(data.length, 1);
+  const barWidth = Math.max(4, slotW * 0.6);
+  const gap = slotW * 0.4;
 
   return (
     <Svg width={width} height={height}>

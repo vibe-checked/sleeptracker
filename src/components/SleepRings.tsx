@@ -70,8 +70,7 @@ function Ring({ radius, percent, color, glowColor, strokeWidth, delay, center }:
         strokeLinecap="round"
         strokeDasharray={`${circumference}`}
         animatedProps={animatedProps}
-        rotation={-90}
-        origin={`${center}, ${center}`}
+        transform={`rotate(-90, ${center}, ${center})`}
       />
     </>
   );

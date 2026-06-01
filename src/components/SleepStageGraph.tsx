@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text, useWindowDimensions } from 'react-native';
 import Svg, { Rect, Line, Polyline, Text as SvgText } from 'react-native-svg';
 import type { SleepStage } from '../data/mockData';
 import type { Theme } from '../themes/themes';
@@ -14,7 +14,8 @@ const stageLabels = ['Deep', 'Light', 'REM', 'Awake'];
 const stageYMap: Record<number, number> = { 0: 0.1, 1: 0.35, 2: 0.65, 3: 0.9 };
 
 export default function SleepStageGraph({ stages, theme, width: propWidth }: Props) {
-  const chartWidth = propWidth || Dimensions.get('window').width - 56;
+  const { width: screenWidth } = useWindowDimensions();
+  const chartWidth = Math.max(200, Math.min(propWidth || screenWidth - 56, 500));
   const chartHeight = 180;
   const padLeft = 45;
   const padBottom = 25;
@@ -85,12 +86,13 @@ export default function SleepStageGraph({ stages, theme, width: propWidth }: Pro
           const yNorm = stageYMap[3 - s.stage];
           const y = padTop + yNorm * plotH;
           const colors: Record<number, string> = { 0: theme.awakeColor, 1: theme.remColor, 2: theme.lightColor, 3: theme.deepColor };
+          const rectWidth = Math.max(0.5, nextX - x);
           return (
             <Rect
               key={i}
               x={x}
               y={y}
-              width={nextX - x}
+              width={rectWidth}
               height={padTop + plotH - y}
               fill={colors[s.stage]}
               fillOpacity={0.12}

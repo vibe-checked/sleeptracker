@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, Text, Pressable, Dimensions } from 'react-native';
+import { ScrollView, View, Text, Pressable, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,7 +12,8 @@ import { sleepHistory, formatMinutes } from '../../src/data/mockData';
 export default function HistoryScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const chartWidth = Dimensions.get('window').width - 72;
+  const { width: screenWidth } = useWindowDimensions();
+  const chartWidth = Math.max(200, Math.min(screenWidth - 72, 450));
 
   const avgTotal = Math.round(sleepHistory.reduce((s, d) => s + d.totalMinutes, 0) / sleepHistory.length);
   const avgRating = Math.round(sleepHistory.reduce((s, d) => s + d.rating, 0) / sleepHistory.length);
@@ -34,9 +35,11 @@ export default function HistoryScreen() {
   }));
 
   return (
-    <LinearGradient colors={theme.bgGradientColors as [string, string, ...string[]]} style={{ flex: 1 }}>
+    <View style={{ flex: 1, height: '100%' }}>
+      <LinearGradient colors={theme.bgGradientColors} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <ScrollView
+          style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         >
@@ -153,6 +156,6 @@ export default function HistoryScreen() {
           </Card>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
