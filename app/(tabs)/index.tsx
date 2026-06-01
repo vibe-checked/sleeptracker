@@ -1,31 +1,142 @@
-import { StyleSheet } from 'react-native';
+import React from 'react';
+import { ScrollView, View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import SleepRings from '../../src/components/SleepRings';
+import ReadinessCard from '../../src/components/ReadinessCard';
+import SleepConsistency from '../../src/components/SleepConsistency';
+import SleepStageGraph from '../../src/components/SleepStageGraph';
+import HealthCards from '../../src/components/HealthCards';
+import SleepBank from '../../src/components/SleepBank';
+import Card from '../../src/components/Card';
+import { useTheme } from '../../src/themes/ThemeContext';
+import { today, sleepGoal, deepGoal, qualityGoal, formatMinutes, getTonightBedtime, sleepHistory } from '../../src/data/mockData';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function TodayScreen() {
+  const { theme } = useTheme();
+  const sleepPercent = Math.round((today.totalMinutes / sleepGoal) * 100);
+  const qualityPercent = Math.round((today.rating / qualityGoal) * 100);
+  const deepPercent = Math.round((today.deepMinutes / deepGoal) * 100);
+  const tonightBedtime = getTonightBedtime(sleepHistory);
 
-export default function TabOneScreen() {
+  const stats = [
+    { label: 'Total Sleep', value: formatMinutes(today.totalMinutes), color: theme.ring1 },
+    { label: 'Sleep Rating', value: `${today.rating}%`, color: theme.ring2 },
+    { label: 'Deep Sleep', value: formatMinutes(today.deepMinutes), color: theme.ring3 },
+    { label: 'REM Sleep', value: formatMinutes(today.remMinutes), color: theme.remColor },
+    { label: 'Efficiency', value: `${today.efficiency}%`, color: theme.accent },
+  ];
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }}>
+      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        >
+          {/* Header */}
+          <Animated.View entering={FadeInUp.duration(500)} style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 2, textTransform: 'uppercase', fontWeight: '600' }}>
+              SleepTracker
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontSize: 26, fontWeight: '700', color: theme.text, marginTop: 2 }}>
+                Good Morning
+              </Text>
+              <View style={{
+                width: 36, height: 36, borderRadius: 18,
+                backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder,
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Text style={{ fontSize: 16 }}>⌚</Text>
+              </View>
+            </View>
+          </Animated.View>
+
+          {/* Morning Briefing */}
+          <Card delay={100}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 4 }}>
+                  Morning Briefing
+                </Text>
+                <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text, marginBottom: 14 }}>
+                  {today.rating >= 80 ? 'Great sleep last night' : today.rating >= 60 ? 'Decent rest last night' : 'Rough night — take it easy'}
+                </Text>
+              </View>
+              {today.emoji ? <Text style={{ fontSize: 26 }}>{today.emoji}</Text> : null}
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <SleepRings
+                sleepPercent={sleepPercent}
+                qualityPercent={qualityPercent}
+                deepPercent={deepPercent}
+                theme={theme}
+                size={150}
+              />
+              <View style={{ flex: 1, marginLeft: 16, gap: 10 }}>
+                {stats.map(item => (
+                  <View key={item.label} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 12, color: theme.textDim }}>{item.label}</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: item.color }}>{item.value}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', marginTop: 16, paddingTop: 14, borderTopWidth: 1, borderTopColor: theme.cardBorder }}>
+              {[
+                { label: 'Bedtime', value: today.bedtime },
+                { label: 'Wake', value: today.wakeTime },
+                { label: 'Lights Off', value: `${today.lightsOffMinutes}m` },
+                { label: 'Awake', value: formatMinutes(today.awakeMinutes) },
+              ].map(item => (
+                <View key={item.label} style={{ flex: 1, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 9, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 3 }}>{item.label}</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: theme.text }}>{item.value}</Text>
+                </View>
+              ))}
+            </View>
+
+            {today.note ? (
+              <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.cardBorder }}>
+                <Text style={{ fontSize: 12, color: theme.textDim, fontStyle: 'italic' }}>"{today.note}"</Text>
+              </View>
+            ) : null}
+          </Card>
+
+          <View style={{ height: 16 }} />
+          <ReadinessCard
+            readiness={today.readiness}
+            sleepFuel={today.sleepFuel}
+            stress={today.priorDayStress}
+            lightsOff={today.lightsOffMinutes}
+            tonightBedtime={tonightBedtime}
+          />
+
+          <View style={{ height: 16 }} />
+          <SleepConsistency />
+
+          <View style={{ height: 16 }} />
+          <Card delay={200}>
+            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 12 }}>
+              Sleep Stages
+            </Text>
+            <SleepStageGraph stages={today.stages} theme={theme} />
+          </Card>
+
+          <View style={{ height: 16 }} />
+          <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 10, paddingLeft: 4 }}>
+            Health Metrics
+          </Text>
+          <HealthCards health={today.health} />
+
+          <View style={{ height: 16 }} />
+          <SleepBank />
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});

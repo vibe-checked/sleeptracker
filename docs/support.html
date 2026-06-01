@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — SleepTracker</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060a18;
+      --bg-surface: rgba(15, 22, 50, 0.65);
+      --border: rgba(80, 120, 200, 0.12);
+      --text: #e8edf8;
+      --text-dim: #8b9cc4;
+      --text-muted: #4a5a80;
+      --accent: #00d4ff;
+      --accent-dim: rgba(0, 212, 255, 0.15);
+      --positive: #06d6a0;
+      --ring2: #a855f7;
+      --ring3: #06d6a0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: radial-gradient(ellipse at 50% 0%, #0f1a3a 0%, #060a18 60%);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .logo-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .logo-bar span { font-size: 28px; }
+
+    .logo-bar a {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+
+    .logo-bar a:hover { color: var(--accent); }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-dim);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .screenshots {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 20px 0 32px;
+      margin-bottom: 32px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .screenshots::-webkit-scrollbar { height: 4px; }
+    .screenshots::-webkit-scrollbar-track { background: transparent; }
+    .screenshots::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .screenshot-item {
+      flex: 0 0 auto;
+      scroll-snap-align: center;
+      text-align: center;
+    }
+
+    .screenshot-item img {
+      width: 200px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.03);
+      transition: transform 0.3s ease;
+    }
+
+    .screenshot-item img:hover {
+      transform: scale(1.03);
+    }
+
+    .screenshot-item .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(12px);
+    }
+
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 .icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 20px 0 10px;
+    }
+
+    h3:first-of-type { margin-top: 8px; }
+
+    p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0;
+    }
+
+    ul li {
+      font-size: 14px;
+      color: var(--text-dim);
+      padding: 8px 0;
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+    }
+
+    ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 16px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.6;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .contact-card {
+      background: rgba(0, 212, 255, 0.05);
+      border: 1px solid rgba(0, 212, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px 20px;
+      text-align: center;
+      transition: border-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .contact-card:hover {
+      border-color: rgba(0, 212, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .contact-card .emoji { font-size: 28px; margin-bottom: 10px; }
+
+    .contact-card .title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .contact-card .desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .contact-card a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .contact-card a:hover { text-decoration: underline; }
+
+    .faq-item {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-item:last-child { border-bottom: none; }
+
+    .faq-q {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .faq-q::before {
+      content: 'Q';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .faq-a {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      padding-left: 30px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .feature-item {
+      background: rgba(0, 212, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 16px;
+    }
+
+    .feature-item .name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feature-item .name .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .feature-item .desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .footer {
+      text-align: center;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    .footer p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .footer a { color: var(--accent); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .badge-version {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 28px; }
+      .card { padding: 24px 20px; }
+      .container { padding: 32px 16px 60px; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .screenshot-item img { width: 160px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-bar">
+      <span>🌙</span>
+      <a href="/">SleepTracker</a>
+    </div>
+
+    <div class="hero">
+      <h1>Support Center</h1>
+      <p>Everything you need to get the most out of SleepTracker. Browse our guides below or reach out directly — we're here to help.</p>
+    </div>
+
+    <!-- Screenshots -->
+    <div class="screenshots">
+      <div class="screenshot-item">
+        <img src="/screenshots/today.png" alt="Today Dashboard" />
+        <div class="label">Today</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="/screenshots/clock.png" alt="Sleep Rings" />
+        <div class="label">Sleep Rings</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="/screenshots/history.png" alt="Sleep History" />
+        <div class="label">History</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="/screenshots/settings.png" alt="Settings" />
+        <div class="label">Settings</div>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="card">
+      <h2><span class="icon">💬</span> Get in Touch</h2>
+      <p>Need help? Choose the best way to reach us:</p>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <div class="emoji">📧</div>
+          <div class="title">Email Support</div>
+          <div class="desc">
+            <a href="mailto:support@sleeptracker.app">support@sleeptracker.app</a><br>
+            Response within 24 hours
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="emoji">🐛</div>
+          <div class="title">Report a Bug</div>
+          <div class="desc">
+            Found an issue? Email us with your device model and iOS version
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="emoji">💡</div>
+          <div class="title">Feature Request</div>
+          <div class="desc">
+            We love hearing your ideas for improving SleepTracker
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="emoji">⭐</div>
+          <div class="title">Rate the App</div>
+          <div class="desc">
+            Enjoying SleepTracker? A review helps us reach more people
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Guide -->
+    <div class="card">
+      <h2><span class="icon">📖</span> Features Guide</h2>
+      <p>SleepTracker offers a comprehensive suite of sleep analysis tools. Here's what each feature does:</p>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #00d4ff;"></span> Sleep Rings</div>
+          <div class="desc">Three animated rings showing progress toward your sleep duration, quality, and deep sleep goals.</div>
+        </div>
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #a855f7;"></span> Sleep Stages</div>
+          <div class="desc">Detailed hypnogram showing your Awake, REM, Light, and Deep sleep phases throughout the night.</div>
+        </div>
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #06d6a0;"></span> Readiness Score</div>
+          <div class="desc">A composite score reflecting your physical and mental readiness based on sleep quality and stress.</div>
+        </div>
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #ff8c32;"></span> Sleep Fuel</div>
+          <div class="desc">Measures the quality and efficiency of your sleep beyond simple duration tracking.</div>
+        </div>
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #ef4444;"></span> Health Metrics</div>
+          <div class="desc">Heart rate, SpO2, HRV, respiration rate, and wrist temperature monitoring during sleep.</div>
+        </div>
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #00d4ff;"></span> Sleep Bank</div>
+          <div class="desc">Track your cumulative sleep debt or surplus over the past week against your goals.</div>
+        </div>
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #a855f7;"></span> Smart Alarm</div>
+          <div class="desc">Wakes you during light sleep within your chosen window for a more refreshed morning.</div>
+        </div>
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #06d6a0;"></span> Sleep Consistency</div>
+          <div class="desc">Visualize your bedtime patterns and get personalized bedtime recommendations.</div>
+        </div>
+        <div class="feature-item">
+          <div class="name"><span class="dot" style="background: #ff8c32;"></span> Data Export</div>
+          <div class="desc">Export all your sleep data as a CSV file to share with healthcare providers.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="card">
+      <h2><span class="icon">❓</span> Frequently Asked Questions</h2>
+
+      <div class="faq-item">
+        <div class="faq-q">How does SleepTracker detect sleep automatically?</div>
+        <div class="faq-a">SleepTracker uses advanced heuristics combining data from your Apple Watch's accelerometer, heart rate sensor, and other biometric inputs to automatically determine when you fall asleep and wake up. No manual input is required — just wear your Apple Watch to bed.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Do I need an Apple Watch to use SleepTracker?</div>
+        <div class="faq-a">An Apple Watch is recommended for the best experience, as it provides the biometric data used for sleep stage analysis and health metrics. However, if you don't wear your Watch to bed, the app can still track basic time-in-bed data.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How is my Sleep Rating calculated?</div>
+        <div class="faq-a">Your Sleep Rating is a composite score (0–100) based on sleep efficiency, deep sleep duration relative to your total sleep time, and overall sleep quality. Higher ratings indicate more restorative sleep.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What is Readiness and how is it different from Sleep Rating?</div>
+        <div class="faq-a">While Sleep Rating evaluates last night's sleep quality, Readiness is a forward-looking score that factors in your sleep quality, prior day stress, and recovery to indicate how prepared you are for the day ahead.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What does "Sleep Fuel" measure?</div>
+        <div class="faq-a">Sleep Fuel measures the restorative quality of your sleep by weighting deep sleep and REM sleep proportions alongside overall efficiency. It tells you how much "fuel" your body got from the night's rest, regardless of total time in bed.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How does the Sleep Bank work?</div>
+        <div class="faq-a">The Sleep Bank tracks your cumulative sleep balance over the past 7 days. Each night, the difference between your actual sleep and your goal (default: 8 hours) is added to your balance. A positive balance means you have surplus sleep; negative means you have sleep debt to recover.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How does the Smart Alarm know when to wake me?</div>
+        <div class="faq-a">The Smart Alarm monitors your sleep stages within the window you set (15, 30, or 45 minutes before your target wake time). It triggers the alarm when it detects you're in a lighter sleep phase, resulting in a more natural, less groggy awakening.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Is my health data shared with anyone?</div>
+        <div class="faq-a">Absolutely not. All data stays on your device. We don't use any analytics, advertising, or third-party services. See our <a href="/privacy.html">Privacy Policy</a> for full details.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How do I export my sleep data?</div>
+        <div class="faq-a">Go to Settings and tap "Export Sleep Data (CSV)." This downloads a CSV file containing 14 days of comprehensive sleep data including all health metrics, which you can open in any spreadsheet application or share with your doctor.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Can I change the app's appearance?</div>
+        <div class="faq-a">Yes! SleepTracker includes three themes: Midnight (deep blue, default), Neon (vibrant pink and gold), and Sunrise (warm amber and purple). Switch between them in Settings.</div>
+      </div>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="card">
+      <h2><span class="icon">🔧</span> Troubleshooting</h2>
+
+      <h3>Sleep not being tracked</h3>
+      <p>Make sure your Apple Watch is worn to bed and has sufficient battery. Check that SleepTracker has permission to access HealthKit data in Settings > Health > Data Access. If issues persist, try restarting both your iPhone and Apple Watch.</p>
+
+      <h3>Inaccurate sleep detection</h3>
+      <p>Sleep detection accuracy improves over time as the app learns your patterns. If you're a restless sleeper, you may need to adjust the sensitivity in the app's calibration settings. Allow 3–5 nights for the algorithm to adapt to your sleep style.</p>
+
+      <h3>Missing health metrics</h3>
+      <p>Blood oxygen (SpO2) requires Apple Watch Series 6 or later. Wrist temperature requires Apple Watch Series 8 or Ultra. Make sure these measurements are enabled in the Apple Watch Health settings.</p>
+
+      <h3>App not showing on Apple Watch</h3>
+      <p>Open the Watch app on your iPhone, scroll down to find SleepTracker, and ensure "Show on Apple Watch" is enabled. If it doesn't appear, try reinstalling the app.</p>
+    </div>
+
+    <!-- System Requirements -->
+    <div class="card">
+      <h2><span class="icon">⚙️</span> System Requirements</h2>
+      <ul>
+        <li>iPhone running iOS 16.0 or later</li>
+        <li>Apple Watch running watchOS 9.0 or later (recommended)</li>
+        <li>Apple Watch Series 6+ for blood oxygen monitoring</li>
+        <li>Apple Watch Series 8+ or Ultra for wrist temperature</li>
+      </ul>
+      <p style="margin-top: 12px;">
+        <span class="badge badge-version">Current Version: 1.0.0</span>
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>&copy; 2026 SleepTracker. All rights reserved.</p>
+      <p style="margin-top: 8px;"><a href="/support.html">Support</a> &middot; <a href="/privacy.html">Privacy Policy</a> &middot; <a href="/">Home</a></p>
+    </div>
+  </div>
+</body>
+</html>
