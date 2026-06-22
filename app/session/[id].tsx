@@ -1,10 +1,14 @@
 import React from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import SleepStageGraph from '../../src/components/SleepStageGraph';
+import GaugeRing from '../../src/components/GaugeRing';
+import ApneaTimeline from '../../src/components/ApneaTimeline';
+import NoiseGraph from '../../src/components/NoiseGraph';
+import SnoringGraph from '../../src/components/SnoringGraph';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
 import { formatMinutes } from '../../src/data/mockData';
@@ -15,6 +19,8 @@ export default function SessionDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getById } = useSleepData();
+  const { width: screenWidth } = useWindowDimensions();
+  const chartWidth = Math.max(200, Math.min(screenWidth - 72, 460));
   const day = getById(id);
 
   if (!day) {
@@ -209,6 +215,66 @@ export default function SessionDetailScreen() {
               Sleep Stages
             </Text>
             <SleepStageGraph stages={day.stages} theme={theme} />
+          </Card>
+
+          <View style={{ height: 12 }} />
+
+          {/* Sleep Apnea */}
+          <Card delay={450}>
+            <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>
+              Sleep Apnea
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+              <GaugeRing
+                value={day.apnea.riskScore}
+                size={76}
+                color={day.apnea.riskScore > 50 ? theme.negative : day.apnea.riskScore > 25 ? theme.ring3 : theme.positive}
+                label="Risk"
+              />
+              <View style={{ flex: 1, gap: 6 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 12, color: theme.textDim }}>AHI (events/hr)</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: theme.text }}>{day.apnea.ahi.toFixed(1)}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 12, color: theme.textDim }}>Total events</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: theme.text }}>{day.apnea.events.length}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 12, color: theme.textDim }}>Severity</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: theme.text }}>
+                    {day.apnea.ahi < 5 ? 'Normal' : day.apnea.ahi < 15 ? 'Mild' : day.apnea.ahi < 30 ? 'Moderate' : 'Severe'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <ApneaTimeline apnea={day.apnea} times={day.stages.map(s => s.time)} width={chartWidth} theme={theme} />
+          </Card>
+
+          <View style={{ height: 12 }} />
+
+          {/* Noise */}
+          <Card delay={500}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+              <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>Environmental Noise</Text>
+              <Text style={{ fontSize: 11, color: theme.textDim }}>
+                avg {Math.round(day.noise.reduce((s, n) => s + n.db, 0) / Math.max(1, day.noise.length))} · peak {Math.round(Math.max(...day.noise.map(n => n.db), 0))} dB
+              </Text>
+            </View>
+            <NoiseGraph samples={day.noise} width={chartWidth} theme={theme} />
+          </Card>
+
+          <View style={{ height: 12 }} />
+
+          {/* Snoring */}
+          <Card delay={550}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+              <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>Snoring</Text>
+              <Text style={{ fontSize: 11, color: theme.textDim }}>
+                {Math.round((day.snoring.filter(s => s.intensity > 0).length / Math.max(1, day.snoring.length)) * 100)}% of night
+              </Text>
+            </View>
+            <SnoringGraph samples={day.snoring} width={chartWidth} theme={theme} />
           </Card>
         </ScrollView>
       </SafeAreaView>
