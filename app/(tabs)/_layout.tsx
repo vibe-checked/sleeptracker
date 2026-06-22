@@ -6,6 +6,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean; color: C
   const icons: Record<string, string> = {
     Today: '☀',
     Clock: '◎',
+    Explore: '◈',
     History: '▤',
     Settings: '⚙',
   };
@@ -52,6 +53,13 @@ export default function TabLayout() {
         options={{
           title: 'Clock',
           tabBarIcon: ({ focused, color }) => <TabIcon label="Clock" focused={focused} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Explore',
+          tabBarIcon: ({ focused, color }) => <TabIcon label="Explore" focused={focused} color={color} />,
         }}
       />
       <Tabs.Screen
