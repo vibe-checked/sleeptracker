@@ -44,16 +44,29 @@ export default function SessionDetailScreen() {
                 {day.dayLabel}, {day.date}
               </Text>
             </View>
-            <Pressable
-              onPress={() => router.back()}
-              style={{
-                width: 36, height: 36, borderRadius: 18,
-                backgroundColor: theme.cardBg, borderWidth: 1, borderColor: theme.cardBorder,
-                alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <Text style={{ color: theme.textDim, fontSize: 16 }}>✕</Text>
-            </Pressable>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Pressable
+                onPress={() => router.push(`/session/edit/${day.id}`)}
+                style={{
+                  height: 36, borderRadius: 18, paddingHorizontal: 14,
+                  backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder,
+                  alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 5,
+                }}
+              >
+                <Text style={{ fontSize: 13 }}>✎</Text>
+                <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>Edit</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => router.back()}
+                style={{
+                  width: 36, height: 36, borderRadius: 18,
+                  backgroundColor: theme.cardBg, borderWidth: 1, borderColor: theme.cardBorder,
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Text style={{ color: theme.textDim, fontSize: 16 }}>✕</Text>
+              </Pressable>
+            </View>
           </Animated.View>
 
           {/* Emoji & Note */}
@@ -65,6 +78,16 @@ export default function SessionDetailScreen() {
                   {day.note || 'No notes'}
                 </Text>
               </View>
+              {day.tags.length > 0 && (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
+                  {day.tags.map(t => (
+                    <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 5, paddingHorizontal: 9, borderRadius: 14, backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder }}>
+                      <Text style={{ fontSize: 11 }}>{t.icon}</Text>
+                      <Text style={{ fontSize: 11, color: theme.textDim }}>{t.label}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </Card>
           ) : null}
 

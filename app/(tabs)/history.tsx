@@ -148,6 +148,11 @@ export default function HistoryScreen() {
                         {d.note}
                       </Text>
                     ) : null}
+                    {d.tags.length > 0 ? (
+                      <Text style={{ fontSize: 11, marginTop: 3 }}>
+                        {d.tags.slice(0, 5).map(t => t.icon).join(' ')}
+                      </Text>
+                    ) : null}
                   </View>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
