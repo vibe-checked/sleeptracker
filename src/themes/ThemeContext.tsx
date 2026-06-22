@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { themes, midnight, type Theme, type ThemeName } from './themes';
+import { load, save, KEYS } from '../data/persistence';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -15,10 +16,17 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [themeName, setThemeNameState] = useState<ThemeName>('midnight');
-  const theme = themes[themeName];
+  const theme = themes[themeName] ?? midnight;
+
+  useEffect(() => {
+    load<ThemeName>(KEYS.theme, 'midnight').then(name => {
+      if (themes[name]) setThemeNameState(name);
+    });
+  }, []);
 
   const setThemeName = useCallback((name: ThemeName) => {
     setThemeNameState(name);
+    save(KEYS.theme, name);
   }, []);
 
   return (

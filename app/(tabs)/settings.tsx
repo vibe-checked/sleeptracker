@@ -8,13 +8,19 @@ import Card from '../../src/components/Card';
 import SmartAlarm from '../../src/components/SmartAlarm';
 import { useTheme } from '../../src/themes/ThemeContext';
 import { themes, type ThemeName } from '../../src/themes/themes';
-import { exportSleepData } from '../../src/data/mockData';
+import { exportSleepData, formatMinutes } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
+import type { SleepGoals } from '../../src/data/types';
 
 export default function SettingsScreen() {
   const { theme, themeName, setThemeName } = useTheme();
-  const { sessions } = useSleepData();
+  const { sessions, goals, setGoals } = useSleepData();
   const [exported, setExported] = useState(false);
+
+  const bumpGoal = (key: keyof SleepGoals, delta: number, min: number, max: number) => {
+    const next = Math.max(min, Math.min(max, goals[key] + delta));
+    setGoals({ ...goals, [key]: next });
+  };
 
   const handleExport = async () => {
     try {
@@ -106,18 +112,18 @@ export default function SettingsScreen() {
 
           <View style={{ height: 16 }} />
 
-          {/* Sleep Goals */}
+          {/* Sleep Goals (editable) */}
           <Card delay={400}>
-            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 14 }}>
+            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 6 }}>
               Sleep Goals
             </Text>
-            {[
-              { label: 'Sleep Duration', value: '8h 0m', color: theme.ring1 },
-              { label: 'Quality Target', value: '85%', color: theme.ring2 },
-              { label: 'Deep Sleep', value: '1h 30m', color: theme.ring3 },
-            ].map((goal, i) => (
+            {([
+              { key: 'sleepGoal', label: 'Sleep Duration', display: formatMinutes(goals.sleepGoal), color: theme.ring1, step: 15, min: 240, max: 720 },
+              { key: 'qualityGoal', label: 'Quality Target', display: `${goals.qualityGoal}%`, color: theme.ring2, step: 5, min: 50, max: 100 },
+              { key: 'deepGoal', label: 'Deep Sleep', display: formatMinutes(goals.deepGoal), color: theme.ring3, step: 15, min: 30, max: 180 },
+            ] as const).map((goal, i) => (
               <View
-                key={goal.label}
+                key={goal.key}
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
@@ -131,7 +137,23 @@ export default function SettingsScreen() {
                   <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: goal.color }} />
                   <Text style={{ fontSize: 14, color: theme.text }}>{goal.label}</Text>
                 </View>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: goal.color }}>{goal.value}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Pressable
+                    onPress={() => bumpGoal(goal.key, -goal.step, goal.min, goal.max)}
+                    hitSlop={8}
+                    style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Text style={{ fontSize: 16, color: theme.textDim, fontWeight: '700' }}>−</Text>
+                  </Pressable>
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: goal.color, width: 56, textAlign: 'center' }}>{goal.display}</Text>
+                  <Pressable
+                    onPress={() => bumpGoal(goal.key, goal.step, goal.min, goal.max)}
+                    hitSlop={8}
+                    style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Text style={{ fontSize: 16, color: theme.textDim, fontWeight: '700' }}>+</Text>
+                  </Pressable>
+                </View>
               </View>
             ))}
           </Card>

@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Card from './Card';
 import { useTheme } from '../themes/ThemeContext';
+import { useSleepData } from '../data/SleepDataContext';
 
 export default function SmartAlarm() {
   const { theme } = useTheme();
-  const [enabled, setEnabled] = useState(true);
-  const [wakeHour, setWakeHour] = useState(7);
-  const [wakeMin, setWakeMin] = useState(0);
-  const [windowMin, setWindowMin] = useState(30);
+  const { smartAlarm, setSmartAlarm } = useSleepData();
+  const { enabled, wakeHour, wakeMin, windowMin } = smartAlarm;
 
   const formatTime = (h: number, m: number) => {
     const ampm = h >= 12 ? 'PM' : 'AM';
@@ -20,9 +19,14 @@ export default function SmartAlarm() {
   const windowStart = new Date(2024, 0, 1, wakeHour, wakeMin - windowMin);
   const startLabel = formatTime(windowStart.getHours(), windowStart.getMinutes());
 
-  const bump = (setter: (fn: (v: number) => number) => void, max: number, step: number, dir: number) => {
+  const setEnabled = (v: boolean) => setSmartAlarm({ ...smartAlarm, enabled: v });
+  const setWindowMin = (w: number) => setSmartAlarm({ ...smartAlarm, windowMin: w });
+
+  // Bump hour or minute with wraparound, persisting the new config.
+  const bump = (field: 'wakeHour' | 'wakeMin', max: number, step: number, dir: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setter((v: number) => (v + dir * step + max) % max);
+    const v = smartAlarm[field];
+    setSmartAlarm({ ...smartAlarm, [field]: (v + dir * step + max) % max });
   };
 
   return (
@@ -52,13 +56,13 @@ export default function SmartAlarm() {
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 18 }}>
             <View style={{ alignItems: 'center' }}>
               <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>Hour</Text>
-              <Pressable onPress={() => bump(setWakeHour, 24, 1, 1)} style={arrowStyle(theme)}>
+              <Pressable onPress={() => bump('wakeHour', 24, 1, 1)} style={arrowStyle(theme)}>
                 <Text style={{ color: theme.textMuted, fontSize: 10 }}>▲</Text>
               </Pressable>
               <Text style={{ fontSize: 40, fontWeight: '700', color: theme.text, width: 56, textAlign: 'center', marginVertical: 4 }}>
                 {wakeHour.toString().padStart(2, '0')}
               </Text>
-              <Pressable onPress={() => bump(setWakeHour, 24, 1, -1)} style={arrowStyle(theme)}>
+              <Pressable onPress={() => bump('wakeHour', 24, 1, -1)} style={arrowStyle(theme)}>
                 <Text style={{ color: theme.textMuted, fontSize: 10 }}>▼</Text>
               </Pressable>
             </View>
@@ -67,13 +71,13 @@ export default function SmartAlarm() {
 
             <View style={{ alignItems: 'center' }}>
               <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>Min</Text>
-              <Pressable onPress={() => bump(setWakeMin, 60, 5, 1)} style={arrowStyle(theme)}>
+              <Pressable onPress={() => bump('wakeMin', 60, 5, 1)} style={arrowStyle(theme)}>
                 <Text style={{ color: theme.textMuted, fontSize: 10 }}>▲</Text>
               </Pressable>
               <Text style={{ fontSize: 40, fontWeight: '700', color: theme.text, width: 56, textAlign: 'center', marginVertical: 4 }}>
                 {wakeMin.toString().padStart(2, '0')}
               </Text>
-              <Pressable onPress={() => bump(setWakeMin, 60, 5, -1)} style={arrowStyle(theme)}>
+              <Pressable onPress={() => bump('wakeMin', 60, 5, -1)} style={arrowStyle(theme)}>
                 <Text style={{ color: theme.textMuted, fontSize: 10 }}>▼</Text>
               </Pressable>
             </View>
