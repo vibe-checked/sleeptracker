@@ -8,15 +8,17 @@ import Card from '../../src/components/Card';
 import SmartAlarm from '../../src/components/SmartAlarm';
 import { useTheme } from '../../src/themes/ThemeContext';
 import { themes, type ThemeName } from '../../src/themes/themes';
-import { sleepHistory, exportSleepData } from '../../src/data/mockData';
+import { exportSleepData } from '../../src/data/mockData';
+import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function SettingsScreen() {
   const { theme, themeName, setThemeName } = useTheme();
+  const { sessions } = useSleepData();
   const [exported, setExported] = useState(false);
 
   const handleExport = async () => {
     try {
-      const csv = exportSleepData(sleepHistory);
+      const csv = exportSleepData(sessions);
       const { File, Paths } = require('expo-file-system');
       const file = new File(Paths.document, 'sleep-data.csv');
       if (file.exists) file.delete();

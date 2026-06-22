@@ -7,13 +7,15 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import SleepStageGraph from '../../src/components/SleepStageGraph';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { sleepHistory, formatMinutes } from '../../src/data/mockData';
+import { formatMinutes } from '../../src/data/mockData';
+import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function SessionDetailScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const day = sleepHistory[Number(id)];
+  const { getById } = useSleepData();
+  const day = getById(id);
 
   if (!day) {
     return (

@@ -6,14 +6,24 @@ import { LinearGradient } from 'expo-linear-gradient';
 import SleepRings from '../../src/components/SleepRings';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { today, sleepGoal, deepGoal, qualityGoal, formatMinutes, sleepHistory } from '../../src/data/mockData';
+import { formatMinutes } from '../../src/data/mockData';
+import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function ClockScreen() {
   const { theme } = useTheme();
+  const { today, sessions, goals, loading } = useSleepData();
+
+  if (loading || !today) {
+    return <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }} />;
+  }
+
+  const sleepGoal = goals.sleepGoal;
+  const deepGoal = goals.deepGoal;
+  const qualityGoal = goals.qualityGoal;
   const sleepPercent = Math.round((today.totalMinutes / sleepGoal) * 100);
   const qualityPercent = Math.round((today.rating / qualityGoal) * 100);
   const deepPercent = Math.round((today.deepMinutes / deepGoal) * 100);
-  const weekAvg = Math.round(sleepHistory.slice(-7).reduce((s, d) => s + d.totalMinutes, 0) / 7);
+  const weekAvg = Math.round(sessions.slice(-7).reduce((s, d) => s + d.totalMinutes, 0) / 7);
 
   const rings = [
     { label: 'Sleep', percent: sleepPercent, color: theme.ring1, value: formatMinutes(today.totalMinutes) },
@@ -80,7 +90,7 @@ export default function ClockScreen() {
               Weekly Rings
             </Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-              {sleepHistory.slice(-7).map((day, i) => (
+              {sessions.slice(-7).map((day, i) => (
                 <Animated.View
                   key={i}
                   entering={FadeInUp.delay(700 + i * 50).duration(300)}

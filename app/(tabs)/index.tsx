@@ -11,14 +11,21 @@ import HealthCards from '../../src/components/HealthCards';
 import SleepBank from '../../src/components/SleepBank';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { today, sleepGoal, deepGoal, qualityGoal, formatMinutes, getTonightBedtime, sleepHistory } from '../../src/data/mockData';
+import { formatMinutes, getTonightBedtime } from '../../src/data/mockData';
+import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function TodayScreen() {
   const { theme } = useTheme();
-  const sleepPercent = Math.round((today.totalMinutes / sleepGoal) * 100);
-  const qualityPercent = Math.round((today.rating / qualityGoal) * 100);
-  const deepPercent = Math.round((today.deepMinutes / deepGoal) * 100);
-  const tonightBedtime = getTonightBedtime(sleepHistory);
+  const { today, sessions, goals, loading } = useSleepData();
+
+  if (loading || !today) {
+    return <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }} />;
+  }
+
+  const sleepPercent = Math.round((today.totalMinutes / goals.sleepGoal) * 100);
+  const qualityPercent = Math.round((today.rating / goals.qualityGoal) * 100);
+  const deepPercent = Math.round((today.deepMinutes / goals.deepGoal) * 100);
+  const tonightBedtime = getTonightBedtime(sessions, goals);
 
   const stats = [
     { label: 'Total Sleep', value: formatMinutes(today.totalMinutes), color: theme.ring1 },

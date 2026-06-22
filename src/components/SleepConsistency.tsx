@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import Card from './Card';
-import { sleepHistory, getTonightBedtime } from '../data/mockData';
+import { getTonightBedtime } from '../data/mockData';
+import { useSleepData } from '../data/SleepDataContext';
 import { useTheme } from '../themes/ThemeContext';
 
 export default function SleepConsistency() {
   const { theme } = useTheme();
-  const tonightBedtime = getTonightBedtime(sleepHistory);
+  const { sessions, goals } = useSleepData();
+  const tonightBedtime = getTonightBedtime(sessions, goals);
 
-  const recent = sleepHistory.slice(-7);
+  const recent = sessions.slice(-7);
   const avgH = Math.round(recent.reduce((s, d) => {
     const [h] = d.bedtime.split(':').map(Number);
     return s + (h >= 20 ? h : h + 24);

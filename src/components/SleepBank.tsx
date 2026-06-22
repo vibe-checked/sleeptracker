@@ -2,13 +2,15 @@ import React from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import Card from './Card';
 import BarChart from './BarChart';
-import { getSleepBank, sleepHistory } from '../data/mockData';
+import { getSleepBank } from '../data/mockData';
+import { useSleepData } from '../data/SleepDataContext';
 import { useTheme } from '../themes/ThemeContext';
 
 export default function SleepBank() {
   const { theme } = useTheme();
-  const bankData = getSleepBank(sleepHistory);
-  const last7 = sleepHistory.slice(-7);
+  const { sessions, goals } = useSleepData();
+  const bankData = getSleepBank(sessions, goals);
+  const last7 = sessions.slice(-7);
   const current = bankData[bankData.length - 1];
   const isPositive = current >= 0;
   const { width: screenWidth } = useWindowDimensions();

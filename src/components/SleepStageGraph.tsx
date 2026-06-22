@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import Svg, { Rect, Line, Polyline, Text as SvgText } from 'react-native-svg';
-import type { SleepStage } from '../data/mockData';
+import type { SleepStage } from '../data/types';
 import type { Theme } from '../themes/themes';
 
 interface Props {

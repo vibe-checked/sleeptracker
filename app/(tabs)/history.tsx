@@ -7,14 +7,22 @@ import { useRouter } from 'expo-router';
 import Card from '../../src/components/Card';
 import BarChart from '../../src/components/BarChart';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { sleepHistory, formatMinutes } from '../../src/data/mockData';
+import { formatMinutes } from '../../src/data/mockData';
+import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function HistoryScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { sessions, loading } = useSleepData();
   const { width: screenWidth } = useWindowDimensions();
   const chartWidth = Math.max(200, Math.min(screenWidth - 72, 450));
 
+  if (loading || sessions.length === 0) {
+    return <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }} />;
+  }
+
+  // Charts show the most recent 14 nights; stats/list use those too.
+  const sleepHistory = sessions.slice(-14);
   const avgTotal = Math.round(sleepHistory.reduce((s, d) => s + d.totalMinutes, 0) / sleepHistory.length);
   const avgRating = Math.round(sleepHistory.reduce((s, d) => s + d.rating, 0) / sleepHistory.length);
   const avgDeep = Math.round(sleepHistory.reduce((s, d) => s + d.deepMinutes, 0) / sleepHistory.length);
@@ -115,8 +123,8 @@ export default function HistoryScreen() {
             </Text>
             {sleepHistory.slice(-7).reverse().map((d, i) => (
               <Pressable
-                key={i}
-                onPress={() => router.push(`/session/${sleepHistory.length - 1 - i}`)}
+                key={d.id}
+                onPress={() => router.push(`/session/${d.id}`)}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
