@@ -17,11 +17,12 @@ export default function SettingsScreen() {
   const handleExport = async () => {
     try {
       const csv = exportSleepData(sleepHistory);
-      const { File, Paths } = require('expo-file-system/next');
+      const { File, Paths } = require('expo-file-system');
       const file = new File(Paths.document, 'sleep-data.csv');
-      file.text = csv;
-      const fileUri = file.uri;
-      await Sharing.shareAsync(fileUri, {
+      if (file.exists) file.delete();
+      file.create();
+      file.write(csv);
+      await Sharing.shareAsync(file.uri, {
         mimeType: 'text/csv',
         dialogTitle: 'Export Sleep Data',
         UTI: 'public.comma-separated-values-text',

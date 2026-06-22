@@ -9,9 +9,10 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sleeptracker.app"
+      "bundleIdentifier": "com.markutilitylabs.sleeptracker"
     },
     "android": {
+      "package": "com.markutilitylabs.sleeptracker",
       "adaptiveIcon": {
         "backgroundColor": "#060a18",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
