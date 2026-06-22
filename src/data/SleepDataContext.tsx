@@ -55,6 +55,9 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettingsState] = useState<SleepSettings>(DEFAULT_SETTINGS);
   const [smartAlarm, setSmartAlarmState] = useState<SmartAlarmConfig>(DEFAULT_ALARM);
   const [liveSession, setLiveSession] = useState<LiveSession | null>(null);
+  // Mirror of liveSession for synchronous reads in stopTracking.
+  const liveRef = useRef<LiveSession | null>(null);
+  liveRef.current = liveSession;
 
   useEffect(() => {
     let mounted = true;
@@ -142,19 +145,17 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const stopTracking = useCallback((): SleepDay | null => {
-    let created: SleepDay | null = null;
-    setLiveSession(prev => {
-      if (prev) {
-        created = synthesizeFromLive(prev, Date.now());
-        setSessions(s => {
-          const next = [...s, created!];
-          persistSessions(next);
-          return next;
-        });
-      }
-      save(KEYS.liveSession, null);
-      return null;
+    const prev = liveRef.current;
+    if (!prev) return null;
+    const created = synthesizeFromLive(prev, Date.now());
+    setSessions(s => {
+      const next = [...s, created];
+      persistSessions(next);
+      return next;
     });
+    liveRef.current = null;
+    setLiveSession(null);
+    save(KEYS.liveSession, null);
     return created;
   }, []);
 

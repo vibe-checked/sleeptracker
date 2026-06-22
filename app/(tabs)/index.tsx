@@ -1,6 +1,7 @@
 import React from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import SleepRings from '../../src/components/SleepRings';
@@ -16,6 +17,7 @@ import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function TodayScreen() {
   const { theme } = useTheme();
+  const router = useRouter();
   const { today, sessions, goals, loading } = useSleepData();
 
   if (loading || !today) {
@@ -61,6 +63,20 @@ export default function TodayScreen() {
                 <Text style={{ fontSize: 16 }}>⌚</Text>
               </View>
             </View>
+          </Animated.View>
+
+          {/* Start Sleep CTA */}
+          <Animated.View entering={FadeInUp.delay(50).duration(500)} style={{ marginBottom: 16 }}>
+            <Pressable
+              onPress={() => router.push('/track')}
+              style={{
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                paddingVertical: 15, borderRadius: 16, backgroundColor: theme.accent,
+              }}
+            >
+              <Text style={{ fontSize: 16 }}>🌙</Text>
+              <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Start Sleep Tracking</Text>
+            </Pressable>
           </Animated.View>
 
           {/* Morning Briefing */}

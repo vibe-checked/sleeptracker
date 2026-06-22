@@ -68,12 +68,18 @@ export function liveSample(elapsedMin: number, prevStage: number): SleepStage {
 }
 
 // Turn an accumulated live session into a full, persisted-ready SleepDay.
+const MAX_NIGHT_SLOTS = 600; // cap a synthesized night at ~10h so a long demo run stays believable
+
 export function synthesizeFromLive(live: LiveSession, endedAt: number): SleepDay {
-  const start = new Date(live.startedAt);
   const end = new Date(endedAt);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const stages = live.samples.length > 0 ? live.samples : [liveSample(0, 0)];
+  const raw = live.samples.length > 0 ? live.samples : [liveSample(0, 0)];
+  const stages = raw.slice(-MAX_NIGHT_SLOTS);
+  // Anchor bedtime to the wake time minus the tracked night length so the
+  // displayed times stay consistent with the duration regardless of demo speed.
+  const nightMinutes = stages.length;
+  const start = new Date(endedAt - nightMinutes * 60 * 1000);
 
   const hrs = stages.map(s => s.heartRate);
   const iso = `${end.getFullYear()}-${(end.getMonth() + 1).toString().padStart(2, '0')}-${end

@@ -3,6 +3,8 @@ import { ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import SleepRings from '../../src/components/SleepRings';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
@@ -11,6 +13,7 @@ import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function ClockScreen() {
   const { theme } = useTheme();
+  const router = useRouter();
   const { today, sessions, goals, loading } = useSleepData();
 
   if (loading || !today) {
@@ -84,6 +87,16 @@ export default function ClockScreen() {
               </Animated.View>
             ))}
           </View>
+
+          <Animated.View entering={FadeInUp.delay(550).duration(500)} style={{ width: '100%', marginBottom: 24 }}>
+            <Pressable
+              onPress={() => router.push('/track')}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 15, borderRadius: 16, backgroundColor: theme.accent }}
+            >
+              <Text style={{ fontSize: 16 }}>🌙</Text>
+              <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Start Sleep Tracking</Text>
+            </Pressable>
+          </Animated.View>
 
           <Card delay={600} style={{ width: '100%' }}>
             <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 14 }}>
