@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Card from './Card';
 import { useTheme } from '../themes/ThemeContext';
 import { useSleepData } from '../data/SleepDataContext';
+import { scheduleSmartAlarm, cancelSmartAlarm } from '../notifications';
 
 export default function SmartAlarm() {
   const { theme } = useTheme();
   const { smartAlarm, setSmartAlarm } = useSleepData();
   const { enabled, wakeHour, wakeMin, windowMin } = smartAlarm;
+
+  // Keep the scheduled local notification in sync with the alarm config.
+  useEffect(() => {
+    if (enabled) scheduleSmartAlarm(smartAlarm);
+    else cancelSmartAlarm();
+  }, [enabled, wakeHour, wakeMin, windowMin]);
 
   const formatTime = (h: number, m: number) => {
     const ampm = h >= 12 ? 'PM' : 'AM';

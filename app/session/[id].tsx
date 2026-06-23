@@ -217,6 +217,8 @@ export default function SessionDetailScreen() {
             <SleepStageGraph stages={day.stages} theme={theme} />
           </Card>
 
+          {day.apnea.events.length > 0 && (
+          <>
           <View style={{ height: 12 }} />
 
           {/* Sleep Apnea */}
@@ -250,7 +252,11 @@ export default function SessionDetailScreen() {
             </View>
             <ApneaTimeline apnea={day.apnea} times={day.stages.map(s => s.time)} width={chartWidth} theme={theme} />
           </Card>
+          </>
+          )}
 
+          {day.noise.length > 0 && (
+          <>
           <View style={{ height: 12 }} />
 
           {/* Noise */}
@@ -263,7 +269,11 @@ export default function SessionDetailScreen() {
             </View>
             <NoiseGraph samples={day.noise} width={chartWidth} theme={theme} />
           </Card>
+          </>
+          )}
 
+          {day.snoring.length > 0 && (
+          <>
           <View style={{ height: 12 }} />
 
           {/* Snoring */}
@@ -276,6 +286,8 @@ export default function SessionDetailScreen() {
             </View>
             <SnoringGraph samples={day.snoring} width={chartWidth} theme={theme} />
           </Card>
+          </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>

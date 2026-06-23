@@ -35,7 +35,16 @@
           "backgroundColor": "#060a18"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-notifications",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "SleepTracker reads your sleep, heart rate, HRV, and respiratory data from Apple Health to show your nightly sleep analysis.",
+          "NSHealthUpdateUsageDescription": "SleepTracker can save sample sleep sessions to Apple Health.",
+          "background": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

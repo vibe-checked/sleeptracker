@@ -14,12 +14,45 @@ import type { SleepGoals } from '../../src/data/types';
 
 export default function SettingsScreen() {
   const { theme, themeName, setThemeName } = useTheme();
-  const { sessions, goals, setGoals } = useSleepData();
+  const { sessions, goals, setGoals, dataSource, healthAvailable, connectHealth, syncFromHealth, seedHealthSample } = useSleepData();
   const [exported, setExported] = useState(false);
+  const [healthBusy, setHealthBusy] = useState(false);
 
   const bumpGoal = (key: keyof SleepGoals, delta: number, min: number, max: number) => {
     const next = Math.max(min, Math.min(max, goals[key] + delta));
     setGoals({ ...goals, [key]: next });
+  };
+
+  const handleConnectHealth = async () => {
+    setHealthBusy(true);
+    try {
+      const { authorized, imported } = await connectHealth();
+      if (!authorized) Alert.alert('Apple Health', 'Permission was not granted. Enable Health access in Settings to import your sleep data.');
+      else Alert.alert('Apple Health', imported > 0 ? `Connected — imported ${imported} night${imported === 1 ? '' : 's'}.` : 'Connected, but no sleep data was found yet. Wear your Apple Watch to bed, then Sync.');
+    } finally {
+      setHealthBusy(false);
+    }
+  };
+
+  const handleSyncHealth = async () => {
+    setHealthBusy(true);
+    try {
+      const n = await syncFromHealth();
+      Alert.alert('Apple Health', n > 0 ? `Synced ${n} night${n === 1 ? '' : 's'} from Health.` : 'No sleep data found in Health.');
+    } finally {
+      setHealthBusy(false);
+    }
+  };
+
+  const handleSeedHealth = async () => {
+    setHealthBusy(true);
+    try {
+      const ok = await seedHealthSample();
+      if (ok) { const n = await syncFromHealth(); Alert.alert('Dev', `Wrote a sample night to Health and synced ${n}.`); }
+      else Alert.alert('Dev', 'Could not write to Health (needs share permission).');
+    } finally {
+      setHealthBusy(false);
+    }
   };
 
   const handleExport = async () => {
@@ -108,6 +141,48 @@ export default function SettingsScreen() {
           </Card>
 
           <View style={{ height: 16 }} />
+
+          {/* Apple Health */}
+          <Card delay={350}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600' }}>
+                Apple Health
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: dataSource === 'healthkit' ? theme.positive : theme.textMuted }} />
+                <Text style={{ fontSize: 12, color: dataSource === 'healthkit' ? theme.positive : theme.textDim, fontWeight: '600' }}>
+                  {dataSource === 'healthkit' ? 'Connected' : 'Sample data'}
+                </Text>
+              </View>
+            </View>
+            <Text style={{ fontSize: 13, color: theme.textDim, marginBottom: 14, lineHeight: 18 }}>
+              {dataSource === 'healthkit'
+                ? 'Showing your real sleep, heart rate, HRV, and respiratory data from Apple Health.'
+                : 'Connect Apple Health to replace the sample data with your real Apple Watch sleep sessions.'}
+            </Text>
+
+            <Pressable
+              onPress={dataSource === 'healthkit' ? handleSyncHealth : handleConnectHealth}
+              disabled={healthBusy || !healthAvailable}
+              style={{ paddingVertical: 13, borderRadius: 14, backgroundColor: healthAvailable ? theme.accent : theme.cardBorder, alignItems: 'center', opacity: healthBusy ? 0.6 : 1 }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '700', color: healthAvailable ? '#000' : theme.textMuted }}>
+                {healthBusy ? 'Working…' : dataSource === 'healthkit' ? 'Sync from Health' : 'Connect Apple Health'}
+              </Text>
+            </Pressable>
+            {!healthAvailable && (
+              <Text style={{ fontSize: 11, color: theme.textMuted, marginTop: 8, textAlign: 'center' }}>
+                Health data isn't available on this device.
+              </Text>
+            )}
+            {__DEV__ && healthAvailable && (
+              <Pressable onPress={handleSeedHealth} disabled={healthBusy} style={{ paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', marginTop: 8 }}>
+                <Text style={{ fontSize: 12, color: theme.textDim }}>Dev: add a sample night to Health</Text>
+              </Pressable>
+            )}
+          </Card>
+
+          <View style={{ height: 16 }} />
           <SmartAlarm />
 
           <View style={{ height: 16 }} />
@@ -182,6 +257,21 @@ export default function SettingsScreen() {
             </Pressable>
             <Text style={{ fontSize: 11, color: theme.textMuted, marginTop: 8, textAlign: 'center' }}>
               Exports 14 days of sleep data including health metrics
+            </Text>
+          </Card>
+
+          <View style={{ height: 16 }} />
+
+          {/* Privacy */}
+          <Card delay={475}>
+            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 10 }}>
+              Privacy
+            </Text>
+            <Text style={{ fontSize: 13, color: theme.textDim, lineHeight: 19 }}>
+              Your sleep and health data stays on this device. SleepTracker reads from Apple Health only with your permission and never uploads your data to any server.
+            </Text>
+            <Text style={{ fontSize: 12, color: theme.textMuted, marginTop: 10 }}>
+              Questions? monkeytree2019@gmail.com
             </Text>
           </Card>
 

@@ -7,6 +7,7 @@ import type {
   LiveSession,
   SleepTag,
 } from './types';
+import type { SleepSource } from './types';
 import { DEFAULT_GOALS, recomputeDerived } from './derive';
 import {
   initSessions,
@@ -14,7 +15,9 @@ import {
   newLiveSession,
   liveSample,
   synthesizeFromLive,
+  setDataSource,
 } from './repository';
+import { healthKitProvider, seedHealthKitSampleNight } from './providers/healthKitProvider';
 import { load, save, KEYS } from './persistence';
 
 const DEFAULT_SETTINGS: SleepSettings = { temperatureUnit: 'C' };
@@ -44,6 +47,11 @@ interface SleepDataValue {
   setSmartAlarm: (a: SmartAlarmConfig) => void;
   startTracking: () => void;
   stopTracking: () => SleepDay | null;
+  dataSource: SleepSource;
+  healthAvailable: boolean;
+  connectHealth: () => Promise<{ authorized: boolean; imported: number }>;
+  syncFromHealth: () => Promise<number>;
+  seedHealthSample: () => Promise<boolean>;
 }
 
 const SleepDataContext = createContext<SleepDataValue | null>(null);
@@ -55,6 +63,8 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettingsState] = useState<SleepSettings>(DEFAULT_SETTINGS);
   const [smartAlarm, setSmartAlarmState] = useState<SmartAlarmConfig>(DEFAULT_ALARM);
   const [liveSession, setLiveSession] = useState<LiveSession | null>(null);
+  const [dataSource, setDataSourceState] = useState<SleepSource>('mock');
+  const [healthAvailable, setHealthAvailable] = useState(false);
   // Mirror of liveSession for synchronous reads in stopTracking.
   const liveRef = useRef<LiveSession | null>(null);
   liveRef.current = liveSession;
@@ -62,12 +72,13 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const [loadedSessions, loadedGoals, loadedSettings, loadedAlarm, loadedLive] = await Promise.all([
+      const [loadedSessions, loadedGoals, loadedSettings, loadedAlarm, loadedLive, loadedSource] = await Promise.all([
         initSessions(),
         load<SleepGoals>(KEYS.goals, DEFAULT_GOALS),
         load<SleepSettings>(KEYS.settings, DEFAULT_SETTINGS),
         load<SmartAlarmConfig>(KEYS.smartAlarm, DEFAULT_ALARM),
         load<LiveSession | null>(KEYS.liveSession, null),
+        load<SleepSource>(KEYS.dataSource, 'mock'),
       ]);
       if (!mounted) return;
       setSessions(loadedSessions);
@@ -75,7 +86,11 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
       setSettingsState(loadedSettings);
       setSmartAlarmState(loadedAlarm);
       setLiveSession(loadedLive);
+      setDataSourceState(loadedSource);
+      if (loadedSource === 'healthkit') setDataSource(healthKitProvider);
       setLoading(false);
+      // Check Apple Health availability in the background (doesn't prompt).
+      healthKitProvider.isAvailable().then(a => mounted && setHealthAvailable(a));
     })();
     return () => {
       mounted = false;
@@ -182,6 +197,26 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
     };
   }, [!!liveSession]);
 
+  // --- Apple Health -----------------------------------------------------------
+  const connectHealth = useCallback(async () => {
+    const authorized = await healthKitProvider.requestPermissions();
+    if (!authorized) return { authorized: false, imported: 0 };
+    setDataSource(healthKitProvider);
+    const hk = await healthKitProvider.getSessions(30);
+    if (hk.length > 0) writeSessions(hk);
+    setDataSourceState('healthkit');
+    save(KEYS.dataSource, 'healthkit');
+    return { authorized: true, imported: hk.length };
+  }, [writeSessions]);
+
+  const syncFromHealth = useCallback(async () => {
+    const hk = await healthKitProvider.getSessions(30);
+    if (hk.length > 0) writeSessions(hk);
+    return hk.length;
+  }, [writeSessions]);
+
+  const seedHealthSample = useCallback(() => seedHealthKitSampleNight(), []);
+
   const today = sessions.length > 0 ? sessions[sessions.length - 1] : null;
 
   const value: SleepDataValue = {
@@ -200,6 +235,11 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
     setSmartAlarm,
     startTracking,
     stopTracking,
+    dataSource,
+    healthAvailable,
+    connectHealth,
+    syncFromHealth,
+    seedHealthSample,
   };
 
   return <SleepDataContext.Provider value={value}>{children}</SleepDataContext.Provider>;

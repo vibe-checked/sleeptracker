@@ -17,6 +17,7 @@ export const KEYS = {
   smartAlarm: 'smartAlarm',
   theme: 'theme',
   liveSession: 'liveSession',
+  dataSource: 'dataSource',
   schemaVersion: 'schemaVersion',
 } as const;
 

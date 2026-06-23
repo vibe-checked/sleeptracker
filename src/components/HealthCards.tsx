@@ -58,7 +58,7 @@ export default function HealthCards({ health }: Props) {
       <MetricCard label="SpO2" value={health.spo2.toFixed(1)} unit="%" sub="Blood oxygen" color={theme.ring1} icon="◉" delay={200} />
       <MetricCard label="HRV" value={String(health.hrv)} unit="ms" sub="Heart rate variability" color={theme.ring2} icon="⟡" delay={300} />
       <MetricCard label="Respiration" value={health.respRate.toFixed(1)} unit="br/min" sub="Breathing rate" color={theme.ring3} icon="⊚" delay={400} />
-      <MetricCard label="Wrist Temp" value={health.wristTemp.toFixed(1)} unit="°C" sub="Skin temperature" color={theme.accent} icon="◈" delay={500} />
+      <MetricCard label="Wrist Temp" value={health.wristTemp > 0 ? health.wristTemp.toFixed(1) : '—'} unit={health.wristTemp > 0 ? '°C' : ''} sub={health.wristTemp > 0 ? 'Skin temperature' : 'Needs Series 8+'} color={theme.accent} icon="◈" delay={500} />
     </View>
   );
 }
