@@ -26,7 +26,10 @@ export default function ClockScreen() {
   const sleepPercent = Math.round((today.totalMinutes / sleepGoal) * 100);
   const qualityPercent = Math.round((today.rating / qualityGoal) * 100);
   const deepPercent = Math.round((today.deepMinutes / deepGoal) * 100);
-  const weekAvg = Math.round(sessions.slice(-7).reduce((s, d) => s + d.totalMinutes, 0) / 7);
+  const recentWeek = sessions.slice(-7);
+  const weekAvg = recentWeek.length
+    ? Math.round(recentWeek.reduce((s, d) => s + d.totalMinutes, 0) / recentWeek.length)
+    : 0;
 
   const rings = [
     { label: 'Sleep', percent: sleepPercent, color: theme.ring1, value: formatMinutes(today.totalMinutes) },

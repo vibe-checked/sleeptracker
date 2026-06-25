@@ -45,8 +45,9 @@ export default function ExploreScreen() {
   }
 
   const metric = METRICS.find(m => m.key === metricKey)!;
-  const series = sessions.map(d => metric.pick(d));
-  const labels = sessions.map(d => d.date.split(' ')[1]);
+  const last30 = sessions.slice(-30);
+  const series = last30.map(d => metric.pick(d));
+  const labels = last30.map(d => d.date.split(' ')[1]);
 
   const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 12 }}>

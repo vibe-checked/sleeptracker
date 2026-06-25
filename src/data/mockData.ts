@@ -19,6 +19,7 @@ export {
   formatMinutes,
   getSleepBank,
   getTonightBedtime,
+  avgBedtime,
   exportSleepData,
   recomputeDerived,
   computeRecovery,

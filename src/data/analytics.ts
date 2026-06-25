@@ -120,9 +120,11 @@ export function periodComparisons(sessions: SleepDay[]): PeriodComparison[] {
     { label: 'Efficiency', pick: d => d.efficiency, unit: '%' },
     { label: 'AHI', pick: d => d.apnea.ahi, unit: '' },
   ];
+  const hasPrior = prior.length > 0;
   return metrics.map(m => {
     const r = Math.round(avgField(recent, m.pick) * 10) / 10;
     const p = Math.round(avgField(prior, m.pick) * 10) / 10;
-    return { label: m.label, recent: r, prior: p, delta: Math.round((r - p) * 10) / 10, unit: m.unit };
+    // No prior week yet → flat delta instead of a misleading r−0 jump.
+    return { label: m.label, recent: r, prior: p, delta: hasPrior ? Math.round((r - p) * 10) / 10 : 0, unit: m.unit };
   });
 }

@@ -98,22 +98,39 @@ export function getSleepBank(history: SleepDay[], goals: SleepGoals): number[] {
   });
 }
 
+// Average bedtime over a window, in minutes since midnight, treating evening
+// hours (>=20:00) as the same night and after-midnight as the next day.
+function avgBedtimeMinutes(days: SleepDay[]): number {
+  const total = days.reduce((s, d) => {
+    const [h, m] = d.bedtime.split(':').map(Number);
+    const hh = h >= 20 ? h : h + 24; // 0–4am counts toward the prior evening
+    return s + hh * 60 + (m || 0);
+  }, 0);
+  return total / days.length;
+}
+
+function formatClockMinutes(totalMin: number): string {
+  let t = Math.round(totalMin) % (24 * 60);
+  if (t < 0) t += 24 * 60;
+  const h = Math.floor(t / 60) % 24;
+  const m = t % 60;
+  return `${h}:${m.toString().padStart(2, '0')}`;
+}
+
 export function getTonightBedtime(history: SleepDay[], goals: SleepGoals): string {
   const recent = history.slice(-7);
   if (recent.length === 0) return '22:30';
-  const avgBedHour =
-    recent.reduce((s, d) => {
-      const [h] = d.bedtime.split(':').map(Number);
-      return s + (h >= 20 ? h : h + 24);
-    }, 0) / recent.length;
+  let adjusted = avgBedtimeMinutes(recent);
   const bankBalance = getSleepBank(history, goals);
   const lastBalance = bankBalance[bankBalance.length - 1] ?? 0;
-  let adjustedHour = avgBedHour;
-  if (lastBalance < -60) adjustedHour -= 0.5;
-  if (lastBalance < -120) adjustedHour -= 0.5;
-  const h = Math.round(adjustedHour) % 24;
-  const m = Math.round((adjustedHour % 1) * 60);
-  return `${h}:${m.toString().padStart(2, '0')}`;
+  if (lastBalance < -60) adjusted -= 30; // behind on sleep → suggest earlier
+  if (lastBalance < -120) adjusted -= 30;
+  return formatClockMinutes(adjusted);
+}
+
+export function avgBedtime(days: SleepDay[]): string {
+  if (days.length === 0) return '—';
+  return formatClockMinutes(avgBedtimeMinutes(days));
 }
 
 export function exportSleepData(history: SleepDay[]): string {

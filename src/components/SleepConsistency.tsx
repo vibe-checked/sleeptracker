@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import Card from './Card';
-import { getTonightBedtime } from '../data/mockData';
+import { getTonightBedtime, avgBedtime } from '../data/mockData';
 import { useSleepData } from '../data/SleepDataContext';
 import { useTheme } from '../themes/ThemeContext';
 
@@ -11,10 +11,7 @@ export default function SleepConsistency() {
   const tonightBedtime = getTonightBedtime(sessions, goals);
 
   const recent = sessions.slice(-7);
-  const avgH = Math.round(recent.reduce((s, d) => {
-    const [h] = d.bedtime.split(':').map(Number);
-    return s + (h >= 20 ? h : h + 24);
-  }, 0) / recent.length);
+  const avgBed = avgBedtime(recent);
 
   return (
     <Card delay={180}>
@@ -55,7 +52,7 @@ export default function SleepConsistency() {
         <View>
           <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 0.8, textTransform: 'uppercase' }}>Avg Bedtime</Text>
           <Text style={{ fontSize: 15, fontWeight: '700', color: theme.text, marginTop: 2 }}>
-            {avgH % 24}:00
+            {avgBed}
           </Text>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
