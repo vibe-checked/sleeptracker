@@ -3,11 +3,19 @@
 
 import type { SleepDay, SleepStage, SleepGoals, SleepSource } from './types';
 
-// Human label + icon for where a night's data came from.
-export function sourceLabel(source: SleepSource): { label: string; icon: string } {
-  switch (source) {
-    case 'healthkit':
-      return { label: 'Apple Health', icon: '❤️' };
+// Human label + icon for where a night's data came from. For HealthKit nights
+// this reflects the true provenance read from the sample (watch / iPhone / which
+// app inserted it).
+export function sourceLabel(day: Pick<SleepDay, 'source' | 'healthSource'>): { label: string; icon: string } {
+  if (day.source === 'healthkit') {
+    const h = day.healthSource ?? '';
+    if (h === 'watch') return { label: 'Apple Watch', icon: '⌚' };
+    if (h === 'iphone') return { label: 'iPhone (Health)', icon: '📲' };
+    if (h === 'inserted') return { label: 'Inserted', icon: '✨' };
+    if (h.startsWith('app:')) return { label: h.slice(4), icon: '❤️' };
+    return { label: 'Apple Health', icon: '❤️' };
+  }
+  switch (day.source) {
     case 'tracked':
       return { label: 'iPhone', icon: '📱' };
     case 'manual':

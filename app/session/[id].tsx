@@ -50,8 +50,8 @@ export default function SessionDetailScreen() {
                 {day.dayLabel}, {day.date}
               </Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, alignSelf: 'flex-start', paddingVertical: 3, paddingHorizontal: 8, borderRadius: 10, backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder }}>
-                <Text style={{ fontSize: 11 }}>{sourceLabel(day.source).icon}</Text>
-                <Text style={{ fontSize: 11, color: theme.textDim, fontWeight: '600' }}>{sourceLabel(day.source).label}</Text>
+                <Text style={{ fontSize: 11 }}>{sourceLabel(day).icon}</Text>
+                <Text style={{ fontSize: 11, color: theme.textDim, fontWeight: '600' }}>{sourceLabel(day).label}</Text>
               </View>
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>

@@ -51,6 +51,32 @@ interface RawSample {
   start: number;
   end: number;
   value: number;
+  prov?: string; // provenance code for sleep samples
+}
+
+const OWN_BUNDLE = 'com.markutilitylabs.sleeptracker';
+
+// Read the true origin of a HealthKit sample from its device + sourceRevision.
+function provenanceOf(s: any): string {
+  const model: string = s?.device?.model ?? '';
+  const productType: string = s?.sourceRevision?.productType ?? '';
+  const bundle: string = s?.sourceRevision?.source?.bundleIdentifier ?? '';
+  const name: string = s?.sourceRevision?.source?.name ?? '';
+  if (/watch/i.test(model) || /^Watch/i.test(productType)) return 'watch';
+  if (bundle === OWN_BUNDLE) return 'inserted';
+  if (/iphone/i.test(model) || /^iPhone/i.test(productType)) return 'iphone';
+  if (name) return `app:${name}`;
+  return 'iphone';
+}
+
+// Most common provenance across a night's samples.
+function dominantProv(night: RawSample[]): string {
+  const counts: Record<string, number> = {};
+  for (const s of night) {
+    const p = s.prov ?? 'iphone';
+    counts[p] = (counts[p] ?? 0) + (s.end - s.start);
+  }
+  return Object.keys(counts).reduce((a, b) => (counts[a] >= counts[b] ? a : b), 'iphone');
 }
 
 // Group sleep samples into nights: a gap > 3h between samples starts a new night.
@@ -168,6 +194,7 @@ async function buildDay(night: RawSample[], hrSamples: RawSample[], hrvSamples: 
   return {
     id: makeId(),
     source: 'healthkit',
+    healthSource: dominantProv(night),
     date: `${monthNames[ed.getMonth()]} ${ed.getDate()}`,
     dayLabel: dayNames[ed.getDay()],
     isoDate: `${ed.getFullYear()}-${(ed.getMonth() + 1).toString().padStart(2, '0')}-${ed.getDate().toString().padStart(2, '0')}`,
@@ -232,7 +259,7 @@ export const healthKitProvider: SleepDataSource = {
       // Only count actual "asleep" stages, not "inBed".
       sleepRaw = (res ?? [])
         .filter((s: any) => s.value !== CategoryValueSleepAnalysis.inBed)
-        .map((s: any) => ({ start: +new Date(s.startDate), end: +new Date(s.endDate), value: s.value }));
+        .map((s: any) => ({ start: +new Date(s.startDate), end: +new Date(s.endDate), value: s.value, prov: provenanceOf(s) }));
     } catch {
       sleepRaw = [];
     }

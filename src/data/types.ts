@@ -77,6 +77,9 @@ export interface SleepDay {
   noise: NoiseSample[];
   snoring: SnoringSample[];
   edited?: boolean;
+  // For HealthKit nights, the true provenance read from the sample metadata:
+  // 'watch' | 'iphone' | 'inserted' (written by this app) | an app name.
+  healthSource?: string;
 }
 
 export interface SleepGoals {

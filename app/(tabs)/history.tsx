@@ -141,7 +141,7 @@ export default function HistoryScreen() {
                       <Text style={{ fontSize: 13, fontWeight: '600', color: theme.text }}>
                         {d.dayLabel}, {d.date}
                       </Text>
-                      <Text style={{ fontSize: 10, color: theme.textMuted }}>{sourceLabel(d.source).icon}</Text>
+                      <Text style={{ fontSize: 10, color: theme.textMuted }}>{sourceLabel(d).icon}</Text>
                     </View>
                     <Text style={{ fontSize: 11, color: theme.textDim }}>
                       {d.bedtime} – {d.wakeTime} · {formatMinutes(d.totalMinutes)}
