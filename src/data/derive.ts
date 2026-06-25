@@ -7,7 +7,7 @@ import type { SleepDay, SleepStage, SleepGoals, SleepSource } from './types';
 export function sourceLabel(source: SleepSource): { label: string; icon: string } {
   switch (source) {
     case 'healthkit':
-      return { label: 'Apple Watch', icon: '⌚' };
+      return { label: 'Apple Health', icon: '❤️' };
     case 'tracked':
       return { label: 'iPhone', icon: '📱' };
     case 'manual':

@@ -147,15 +147,19 @@ async function buildDay(night: RawSample[], hrSamples: RawSample[], hrvSamples: 
   const priorDayStress = 35;
   const readiness = computeReadiness(sleepFuel, priorDayStress, efficiency);
 
+  // Use 0 when a metric has no real samples for this night so the UI shows "—"
+  // instead of a fabricated value (older nights may be outside the HR window).
   const hrVals = hrIn.map(s => s.value);
-  const spo2Pct = avg(spo2Samples.filter(inWindow).map(s => s.value * 100), 96.5);
+  const hrvVals = hrvSamples.filter(inWindow).map(s => s.value);
+  const respVals = respSamples.filter(inWindow).map(s => s.value);
+  const spo2Vals = spo2Samples.filter(inWindow).map(s => s.value * 100);
   const health: HealthMetrics = {
-    heartRateAvg: Math.round(avg(hrVals, 58)),
-    heartRateMin: hrVals.length ? Math.round(Math.min(...hrVals)) : 50,
-    heartRateMax: hrVals.length ? Math.round(Math.max(...hrVals)) : 75,
-    hrv: Math.round(avg(hrvSamples.filter(inWindow).map(s => s.value), 45)),
-    spo2: Math.round(spo2Pct * 10) / 10,
-    respRate: Math.round(avg(respSamples.filter(inWindow).map(s => s.value), 14) * 10) / 10,
+    heartRateAvg: hrVals.length ? Math.round(avg(hrVals, 0)) : 0,
+    heartRateMin: hrVals.length ? Math.round(Math.min(...hrVals)) : 0,
+    heartRateMax: hrVals.length ? Math.round(Math.max(...hrVals)) : 0,
+    hrv: hrvVals.length ? Math.round(avg(hrvVals, 0)) : 0,
+    spo2: spo2Vals.length ? Math.round(avg(spo2Vals, 0) * 10) / 10 : 0,
+    respRate: respVals.length ? Math.round(avg(respVals, 0) * 10) / 10 : 0,
     wristTemp: 0, // not available without a Series 8+/Ultra wrist-temp sensor
   };
 
@@ -234,11 +238,16 @@ export const healthKitProvider: SleepDataSource = {
     }
     if (sleepRaw.length === 0) return [];
 
+    // Heart-rate and friends are logged continuously by the watch, so pulling
+    // them over a long range is huge. Cap the metric window to the recent
+    // ~45 days; older nights still show real sleep structure, with HR/HRV/etc
+    // as "—".
+    const metricStart = new Date(Math.max(startDate.getTime(), endDate.getTime() - 45 * 24 * 60 * 60 * 1000));
     const [hr, hrv, resp, spo2] = await Promise.all([
-      queryRange(HR, startDate, endDate),
-      queryRange(HRV, startDate, endDate),
-      queryRange(RESP, startDate, endDate),
-      queryRange(SPO2, startDate, endDate),
+      queryRange(HR, metricStart, endDate),
+      queryRange(HRV, metricStart, endDate),
+      queryRange(RESP, metricStart, endDate),
+      queryRange(SPO2, metricStart, endDate),
     ]);
 
     const nights = groupNights(sleepRaw).filter(n => n.length > 0);

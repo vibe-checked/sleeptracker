@@ -114,7 +114,7 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
             await save(KEYS.dataSource, 'healthkit');
           }
           try {
-            const hk = await healthKitProvider.getSessions(30);
+            const hk = await healthKitProvider.getSessions(180);
             if (mounted && hk.length > 0) {
               setSessions(hk);
               persistSessions(hk);
@@ -238,7 +238,7 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
     const authorized = await healthKitProvider.requestPermissions();
     if (!authorized) return { authorized: false, imported: 0 };
     setDataSource(healthKitProvider);
-    const hk = await healthKitProvider.getSessions(30);
+    const hk = await healthKitProvider.getSessions(180);
     if (hk.length > 0) writeSessions(hk);
     setDataSourceState('healthkit');
     save(KEYS.dataSource, 'healthkit');
@@ -246,7 +246,7 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
   }, [writeSessions]);
 
   const syncFromHealth = useCallback(async () => {
-    const hk = await healthKitProvider.getSessions(30);
+    const hk = await healthKitProvider.getSessions(180);
     if (hk.length > 0) writeSessions(hk);
     return hk.length;
   }, [writeSessions]);
