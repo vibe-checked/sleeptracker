@@ -2,7 +2,8 @@
 
 You are an AI coding agent. Your job: from this kit alone, generate a polished,
 professional **single-page App Store Support + Privacy website** for the app in
-the **current repository**, deployed via GitHub Pages from `docs/`.
+the **current repository**, deployed to **Vercel** under a
+`<app>.vibecode.review` subdomain (served from `docs/`).
 
 Follow this README exactly. Do not improvise the structure, the layout, or the
 contact details. Assume **no prior context** — everything you need is here or
@@ -74,13 +75,12 @@ Run/read these to learn the app. Do not guess any of them:
   and the **real** privacy/data behaviour (what's stored, what permissions are
   used, whether anything is sent off-device).
 - **Git remote:** `git remote get-url origin` → derive `OWNER` and `REPO`.
-  - `SITE_URL`  = `https://OWNER.github.io/REPO/`
-  - `GITHUB_URL` = `https://github.com/OWNER/REPO`
+  - `GITHUB_URL` = `https://github.com/OWNER/REPO` (footer link only)
+- **Hosting = Vercel under a `<sub>.vibecode.review` subdomain** (NOT GitHub
+  Pages — the `*.github.io` URL looks unprofessional and Pages is disabled for
+  these apps). Pick `SUB` = the app slug (e.g. `sleeptracker`).
+  - `SITE_URL` = `https://SUB.vibecode.review/` (trailing slash)
 - **Default branch:** `git symbolic-ref --short HEAD` (or check the remote).
-- **GitHub Pages:** confirm it serves from `/docs`:
-  `gh api repos/OWNER/REPO/pages` → look for `"path":"/docs"`. If Pages isn't
-  enabled, tell the user to enable it (Settings → Pages → Branch: default,
-  Folder: `/docs`).
 
 **Look at the pixels.** Open the app **icon** and **1–2 screenshots** (read them
 as images). You need to SEE the brand colours to theme the site (Step 3).
@@ -203,12 +203,28 @@ stale `screenshots/` folders, etc.) so nothing dangles.
 - **Sanity-grep:** the page contains `mark@vibecode.review`, has
   `id="support"` and `id="privacy"`, and contains **no leftover `{{`**.
 - **Commit & push** (Conventional Commits, author Marcus Hsu, no co-author) to
-  the **default branch**. Confirm GitHub Pages rebuilds and the URL returns 200.
+  the **default branch**.
+- **Deploy to Vercel** under `SUB.vibecode.review` (`vibecode.review` is
+  Vercel-managed, scope `marcusdoingtech-6438s-projects`, CLI authed as
+  `marcusdoingtech-6438`; subdomains auto-provision DNS + HTTPS). The `vercel`
+  shim NEEDS `ASDF_NODEJS_VERSION=22.16.0` or asdf errors "no version set":
+  ```sh
+  cd docs
+  ASDF_NODEJS_VERSION=22.16.0 vercel link --yes --project SUB
+  ASDF_NODEJS_VERSION=22.16.0 vercel deploy --prod --yes
+  ASDF_NODEJS_VERSION=22.16.0 vercel domains add SUB.vibecode.review
+  ```
+  Then set the project's **Root Directory = `docs`** (Vercel dashboard/API) so
+  git-connected builds serve the static site, and the repo's `docs/` changes
+  **auto-deploy** on push — no manual `vercel deploy` after the first time.
+  (`.vercel/` is gitignored.) If the app had an old GitHub Pages site, disable
+  it: `gh api -X DELETE repos/OWNER/REPO/pages`.
+- Confirm `https://SUB.vibecode.review/` returns 200.
 
 **The App Store URLs to hand back to the user:**
 
-- Support URL:  `https://OWNER.github.io/REPO/#support`
-- Privacy URL:  `https://OWNER.github.io/REPO/#privacy`
+- Support URL:  `https://SUB.vibecode.review/#support`
+- Privacy URL:  `https://SUB.vibecode.review/#privacy`
 
 ---
 
@@ -235,7 +251,7 @@ card-bg = #fff for light-app screenshots, dark for dark-app screenshots
 - `{{META_DESCRIPTION}}` — one sentence describing the app + that this is its
   support/privacy page.
 - `{{THEME_COLOR}}` — hex of `--hero-2` (dark).
-- `{{SITE_URL}}` — `https://OWNER.github.io/REPO/` (trailing slash).
+- `{{SITE_URL}}` — `https://SUB.vibecode.review/` (trailing slash).
 - `{{GITHUB_URL}}` — `https://github.com/OWNER/REPO`.
 
 **Hero**
@@ -322,5 +338,6 @@ disclose it honestly.
       `Mark Utility Labs`
 - [ ] Previewed: hero, gallery scroll + arrows, anchors, mobile, no console errors
 - [ ] Committed (Conventional Commits, author Marcus Hsu, no co-author) and
-      pushed to the default branch; Pages live (HTTP 200)
+      pushed to the default branch; deployed to Vercel at
+      `SUB.vibecode.review` with Root Directory = `docs` (HTTP 200)
 - [ ] Reported the `#support` and `#privacy` URLs to the user
