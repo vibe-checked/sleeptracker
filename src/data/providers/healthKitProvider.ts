@@ -150,12 +150,13 @@ function toStages(segments: RawSample[], start: number, end: number, hrByTime: (
   return stages;
 }
 
-async function queryRange(identifier: string, startDate: Date, endDate: Date): Promise<RawSample[]> {
+async function queryRange(identifier: string, startDate: Date, endDate: Date, unit: string): Promise<RawSample[]> {
   try {
     const res: any = await queryQuantitySamples(identifier as any, {
       filter: { startDate, endDate },
       limit: 0,
       ascending: true,
+      unit, // pin the unit so HRV is ms (not seconds), HR is count/min, etc.
     } as any);
     return (res ?? []).map((s: any) => ({ start: +new Date(s.startDate), end: +new Date(s.endDate), value: s.quantity }));
   } catch {
@@ -228,7 +229,7 @@ function buildDay(
   const hrVals = hrIn.map(s => s.value);
   const hrvVals = hrvSamples.filter(inWindow).map(s => s.value);
   const respVals = respSamples.filter(inWindow).map(s => s.value);
-  const spo2Vals = spo2Samples.filter(inWindow).map(s => s.value * 100);
+  const spo2Vals = spo2Samples.filter(inWindow).map(s => s.value); // already 0-100 (unit '%')
   const hrByTime = (t: number) => {
     const near = hrIn.find(s => t >= s.start && t <= s.end);
     return near ? near.value : avg(hrVals, 0);
@@ -340,10 +341,10 @@ export const healthKitProvider: SleepDataSource = {
     // as "—".
     const metricStart = new Date(Math.max(startDate.getTime(), endDate.getTime() - 45 * 24 * 60 * 60 * 1000));
     const [hr, hrv, resp, spo2] = await Promise.all([
-      queryRange(HR, metricStart, endDate),
-      queryRange(HRV, metricStart, endDate),
-      queryRange(RESP, metricStart, endDate),
-      queryRange(SPO2, metricStart, endDate),
+      queryRange(HR, metricStart, endDate, 'count/min'),
+      queryRange(HRV, metricStart, endDate, 'ms'),
+      queryRange(RESP, metricStart, endDate, 'count/min'),
+      queryRange(SPO2, metricStart, endDate, '%'),
     ]);
 
     const nights = groupNights(sleepRaw).filter(n => n.length > 0);
