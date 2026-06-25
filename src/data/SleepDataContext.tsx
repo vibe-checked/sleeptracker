@@ -19,9 +19,10 @@ import {
   synthesizeFromLive,
   setDataSource,
 } from './repository';
-import { healthKitProvider, seedHealthKitSampleNight } from './providers/healthKitProvider';
+import { healthKitProvider, seedHealthKitSampleNight, startHealthBackgroundSync } from './providers/healthKitProvider';
 import { load, save, KEYS } from './persistence';
 import * as Device from 'expo-device';
+import { AppState } from 'react-native';
 
 // true on a real iPhone, false on the iOS Simulator. Drives the core rule:
 // device -> real Apple Health data; simulator -> mock data.
@@ -252,6 +253,35 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
   }, [writeSessions]);
 
   const seedHealthSample = useCallback(() => seedHealthKitSampleNight(), []);
+
+  // Keep Apple Health data fresh on device without a manual tap:
+  //  - re-pull when the app returns to the foreground (throttled to ~1/min)
+  //  - register a HealthKit background observer so iOS can wake the app and
+  //    refresh even while it's closed.
+  const lastSyncRef = useRef(0);
+  useEffect(() => {
+    if (!IS_DEVICE) return;
+    const throttledSync = () => {
+      const now = Date.now();
+      if (now - lastSyncRef.current < 60_000) return;
+      lastSyncRef.current = now;
+      syncFromHealth().catch(() => {});
+    };
+
+    const appStateSub = AppState.addEventListener('change', state => {
+      if (state === 'active') throttledSync();
+    });
+
+    let unsubscribe: (() => void) | undefined;
+    startHealthBackgroundSync(() => throttledSync()).then(fn => {
+      unsubscribe = fn;
+    });
+
+    return () => {
+      appStateSub.remove();
+      unsubscribe?.();
+    };
+  }, [syncFromHealth]);
 
   const today = sessions.length > 0 ? sessions[sessions.length - 1] : null;
 

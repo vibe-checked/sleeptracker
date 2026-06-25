@@ -6,6 +6,9 @@ import {
   queryQuantitySamples,
   saveCategorySample,
   saveQuantitySample,
+  enableBackgroundDelivery,
+  subscribeToChanges,
+  UpdateFrequency,
   CategoryValueSleepAnalysis,
 } from '@kingstinct/react-native-healthkit';
 import type { SleepDay, SleepStage, HealthMetrics } from '../types';
@@ -358,6 +361,30 @@ export const healthKitProvider: SleepDataSource = {
     return days.length ? days[days.length - 1] : null;
   },
 };
+
+// Register an Apple Health observer: iOS wakes the app (even in the background)
+// when new sleep data arrives and fires `onChange`. Returns an unsubscribe fn.
+export async function startHealthBackgroundSync(onChange: () => void): Promise<() => void> {
+  try {
+    await enableBackgroundDelivery(SLEEP as any, UpdateFrequency.hourly);
+  } catch {
+    // entitlement/permission missing — observer still works while app is open
+  }
+  let sub: any;
+  try {
+    sub = subscribeToChanges(SLEEP as any, () => onChange());
+  } catch {
+    sub = null;
+  }
+  return () => {
+    try {
+      if (typeof sub === 'function') sub();
+      else sub?.remove?.();
+    } catch {
+      // already gone
+    }
+  };
+}
 
 // Dev helper: seed the iOS Simulator's Health store with one realistic night so
 // the read path can be verified without an Apple Watch. No-op on failure.
