@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -18,10 +18,54 @@ import { useSleepData } from '../../src/data/SleepDataContext';
 export default function TodayScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { today, sessions, goals, loading } = useSleepData();
+  const { today, sessions, goals, loading, isDevice, dataSource, connectHealth, syncFromHealth } = useSleepData();
+  const [syncing, setSyncing] = useState(false);
 
-  if (loading || !today) {
+  const goTrack = () => router.push('/track');
+  // Pull tonight's sleep from Apple Health (watch users).
+  const syncHealth = async () => {
+    setSyncing(true);
+    try {
+      if (dataSource !== 'healthkit') await connectHealth();
+      else await syncFromHealth();
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  if (loading) {
     return <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }} />;
+  }
+
+  // Device with no nights yet: onboarding/empty state.
+  if (!today) {
+    return (
+      <View style={{ flex: 1 }}>
+        <LinearGradient colors={theme.bgGradientColors} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+        <SafeAreaView edges={['top']} style={{ flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 56, marginBottom: 16 }}>🌙</Text>
+          <Text style={{ fontSize: 22, fontWeight: '700', color: theme.text, textAlign: 'center', marginBottom: 10 }}>
+            No sleep data yet
+          </Text>
+          <Text style={{ fontSize: 14, color: theme.textDim, textAlign: 'center', lineHeight: 20, marginBottom: 28 }}>
+            Track tonight with your iPhone on the mattress — or wear your Apple Watch and sync it in the morning.
+          </Text>
+          <Pressable
+            onPress={goTrack}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 15, paddingHorizontal: 28, borderRadius: 16, backgroundColor: theme.accent }}
+          >
+            <Text style={{ fontSize: 16 }}>🌙</Text>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Start Sleep Tracking</Text>
+          </Pressable>
+          {isDevice && (
+            <Pressable onPress={syncHealth} disabled={syncing} style={{ marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ fontSize: 14 }}>❤️</Text>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: theme.accent }}>{syncing ? 'Syncing…' : 'Sync Apple Health'}</Text>
+            </Pressable>
+          )}
+        </SafeAreaView>
+      </View>
+    );
   }
 
   const sleepPercent = Math.round((today.totalMinutes / goals.sleepGoal) * 100);
@@ -65,10 +109,10 @@ export default function TodayScreen() {
             </View>
           </Animated.View>
 
-          {/* Start Sleep CTA */}
+          {/* Start Sleep Tracking (iPhone sensors) + optional Apple Health sync */}
           <Animated.View entering={FadeInUp.delay(50).duration(500)} style={{ marginBottom: 16 }}>
             <Pressable
-              onPress={() => router.push('/track')}
+              onPress={goTrack}
               style={{
                 flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
                 paddingVertical: 15, borderRadius: 16, backgroundColor: theme.accent,
@@ -77,6 +121,12 @@ export default function TodayScreen() {
               <Text style={{ fontSize: 16 }}>🌙</Text>
               <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Start Sleep Tracking</Text>
             </Pressable>
+            {isDevice && (
+              <Pressable onPress={syncHealth} disabled={syncing} style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <Text style={{ fontSize: 13 }}>❤️</Text>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: theme.accent }}>{syncing ? 'Syncing…' : 'Sync from Apple Health'}</Text>
+              </Pressable>
+            )}
           </Animated.View>
 
           {/* Morning Briefing */}

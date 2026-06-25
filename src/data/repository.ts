@@ -1,4 +1,4 @@
-import type { SleepDay, LiveSession, SleepStage } from './types';
+import type { SleepDay, LiveSession, SleepStage, NoiseSample, SnoringSample } from './types';
 import { recomputeDerived } from './derive';
 import { mockProvider, makeId } from './providers/mockProvider';
 import type { SleepDataSource } from './providers/SleepDataSource';
@@ -70,18 +70,49 @@ export function liveSample(elapsedMin: number, prevStage: number): SleepStage {
 // Turn an accumulated live session into a full, persisted-ready SleepDay.
 const MAX_NIGHT_SLOTS = 600; // cap a synthesized night at ~10h so a long demo run stays believable
 
-export function synthesizeFromLive(live: LiveSession, endedAt: number): SleepDay {
+interface TrackExtra {
+  noise?: NoiseSample[];
+  snoring?: SnoringSample[];
+  hasHeartRate?: boolean; // false for phone-sensor sessions (no HR sensor)
+}
+
+export function synthesizeFromLive(live: LiveSession, endedAt: number, extra: TrackExtra = {}): SleepDay {
   const end = new Date(endedAt);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const raw = live.samples.length > 0 ? live.samples : [liveSample(0, 0)];
-  const stages = raw.slice(-MAX_NIGHT_SLOTS);
-  // Anchor bedtime to the wake time minus the tracked night length so the
-  // displayed times stay consistent with the duration regardless of demo speed.
-  const nightMinutes = stages.length;
+  // The live tracker records one sample per minute, but the rest of the app
+  // treats one stage entry as a 15-minute slot (countStageMinutes * 15). So
+  // downsample the per-minute samples into 15-minute slots before deriving.
+  const BIN = 15;
+  const rawStages = (live.samples.length > 0 ? live.samples : [liveSample(0, 0)]).slice(-24 * 60);
+  const rawNoise = (extra.noise ?? []).slice(-24 * 60);
+  const rawSnore = (extra.snoring ?? []).slice(-24 * 60);
+
+  const dominantStage = (chunk: SleepStage[]): number => {
+    const counts: Record<number, number> = {};
+    for (const s of chunk) counts[s.stage] = (counts[s.stage] ?? 0) + 1;
+    return Number(Object.keys(counts).reduce((a, b) => (counts[+a] >= counts[+b] ? a : b)));
+  };
+  const avgOf = (nums: number[]) => (nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 0);
+
+  const stages: SleepStage[] = [];
+  const noise: NoiseSample[] = [];
+  const snoring: SnoringSample[] = [];
+  for (let i = 0; i < rawStages.length; i += BIN) {
+    const cs = rawStages.slice(i, i + BIN);
+    const chunkHrs = cs.map(s => s.heartRate).filter(h => h > 0);
+    stages.push({ time: cs[0].time, stage: dominantStage(cs), heartRate: chunkHrs.length ? Math.round(avgOf(chunkHrs)) : 0 });
+    const cn = rawNoise.slice(i, i + BIN);
+    if (cn.length) noise.push({ time: cn[0].time, db: Math.round(avgOf(cn.map(n => n.db))) });
+    const csn = rawSnore.slice(i, i + BIN);
+    if (csn.length) snoring.push({ time: csn[0].time, intensity: Math.max(0, ...csn.map(s => s.intensity)) });
+  }
+  // Anchor bedtime to wake minus the night length (15 min per slot).
+  const nightMinutes = stages.length * BIN;
   const start = new Date(endedAt - nightMinutes * 60 * 1000);
 
-  const hrs = stages.map(s => s.heartRate);
+  const hrs = stages.map(s => s.heartRate).filter(h => h > 0);
+  const hasHR = extra.hasHeartRate !== false && hrs.length > 0;
   const iso = `${end.getFullYear()}-${(end.getMonth() + 1).toString().padStart(2, '0')}-${end
     .getDate()
     .toString()
@@ -103,25 +134,27 @@ export function synthesizeFromLive(live: LiveSession, endedAt: number): SleepDay
     efficiency: 0,
     rating: 0,
     stages,
+    // Phone tracking has no heart-rate/SpO2/HRV/temp sensors → 0 = unavailable
+    // (the UI shows these as "—").
     health: {
-      heartRateAvg: Math.round(hrs.reduce((a, b) => a + b, 0) / hrs.length),
-      heartRateMin: Math.min(...hrs),
-      heartRateMax: Math.max(...hrs),
-      hrv: 35 + Math.floor(Math.random() * 25),
-      spo2: Math.round((95 + Math.random() * 3) * 10) / 10,
-      respRate: 13 + Math.round(Math.random() * 4 * 10) / 10,
-      wristTemp: 35.2 + Math.round(Math.random() * 1.5 * 10) / 10,
+      heartRateAvg: hasHR ? Math.round(hrs.reduce((a, b) => a + b, 0) / hrs.length) : 0,
+      heartRateMin: hasHR ? Math.min(...hrs) : 0,
+      heartRateMax: hasHR ? Math.max(...hrs) : 0,
+      hrv: 0,
+      spo2: 0,
+      respRate: 0,
+      wristTemp: 0,
     },
     readiness: 0,
     sleepFuel: 0,
     lightsOffMinutes: 10,
-    priorDayStress: 30 + Math.floor(Math.random() * 40),
+    priorDayStress: 35,
     emoji: '😴',
-    note: 'Tracked live',
+    note: 'Tracked with iPhone',
     tags: [],
     apnea: { events: [], ahi: 0, riskScore: 0 },
-    noise: [],
-    snoring: [],
+    noise,
+    snoring,
   };
   return recomputeDerived(base);
 }

@@ -18,6 +18,7 @@ export const KEYS = {
   theme: 'theme',
   liveSession: 'liveSession',
   dataSource: 'dataSource',
+  healthOnboarded: 'healthOnboarded',
   schemaVersion: 'schemaVersion',
 } as const;
 

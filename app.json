@@ -9,7 +9,10 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.markutilitylabs.sleeptracker"
+      "bundleIdentifier": "com.markutilitylabs.sleeptracker",
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
     },
     "android": {
       "package": "com.markutilitylabs.sleeptracker",
@@ -43,6 +46,12 @@
           "NSHealthShareUsageDescription": "SleepTracker reads your sleep, heart rate, HRV, and respiratory data from Apple Health to show your nightly sleep analysis.",
           "NSHealthUpdateUsageDescription": "SleepTracker can save sample sleep sessions to Apple Health.",
           "background": false
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "SleepTracker uses the microphone overnight to detect snoring and room noise while you sleep. Audio is analyzed on-device and never recorded or uploaded."
         }
       ]
     ],

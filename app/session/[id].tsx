@@ -182,9 +182,9 @@ export default function SessionDetailScreen() {
           {/* Health */}
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {[
-              { label: 'HR Avg', value: `${day.health.heartRateAvg}`, unit: 'bpm', color: theme.hrColor },
-              { label: 'SpO2', value: day.health.spo2.toFixed(1), unit: '%', color: theme.ring1 },
-              { label: 'HRV', value: `${day.health.hrv}`, unit: 'ms', color: theme.ring2 },
+              { label: 'HR Avg', value: day.health.heartRateAvg > 0 ? `${day.health.heartRateAvg}` : '—', unit: day.health.heartRateAvg > 0 ? 'bpm' : '', color: theme.hrColor },
+              { label: 'SpO2', value: day.health.spo2 > 0 ? day.health.spo2.toFixed(1) : '—', unit: day.health.spo2 > 0 ? '%' : '', color: theme.ring1 },
+              { label: 'HRV', value: day.health.hrv > 0 ? `${day.health.hrv}` : '—', unit: day.health.hrv > 0 ? 'ms' : '', color: theme.ring2 },
             ].map((m, i) => (
               <Animated.View
                 key={m.label}

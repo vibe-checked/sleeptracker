@@ -12,7 +12,7 @@ import { getTonightBedtime } from '../../src/data/mockData';
 export default function StartSleepScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { sessions, goals, smartAlarm, startTracking } = useSleepData();
+  const { sessions, goals, smartAlarm, startTracking, isDevice } = useSleepData();
 
   const tonight = getTonightBedtime(sessions, goals);
   const alarmLabel = (() => {
@@ -45,7 +45,9 @@ export default function StartSleepScreen() {
             <Text style={{ fontSize: 60, marginBottom: 16 }}>🌙</Text>
             <Text style={{ fontSize: 28, fontWeight: '700', color: theme.text, marginBottom: 8 }}>Ready for bed?</Text>
             <Text style={{ fontSize: 14, color: theme.textDim, textAlign: 'center', lineHeight: 20 }}>
-              We'll track your sleep stages, heart rate, and more through the night.
+              {isDevice
+                ? "We'll use your iPhone's motion and microphone to track movement, sleep phases, and snoring. Put your phone on the mattress and keep it plugged in."
+                : "We'll simulate a night of sleep tracking for this demo."}
             </Text>
 
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 28 }}>
