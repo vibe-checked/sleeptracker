@@ -1,7 +1,21 @@
 // Pure derivation + utility functions. No randomness, no I/O.
 // Used by the mock generator AND by the edit flow (recompute on change).
 
-import type { SleepDay, SleepStage, SleepGoals } from './types';
+import type { SleepDay, SleepStage, SleepGoals, SleepSource } from './types';
+
+// Human label + icon for where a night's data came from.
+export function sourceLabel(source: SleepSource): { label: string; icon: string } {
+  switch (source) {
+    case 'healthkit':
+      return { label: 'Apple Watch', icon: '⌚' };
+    case 'tracked':
+      return { label: 'iPhone', icon: '📱' };
+    case 'manual':
+      return { label: 'Manual', icon: '✎' };
+    default:
+      return { label: 'Sample', icon: '✨' };
+  }
+}
 
 export const DEFAULT_GOALS: SleepGoals = {
   sleepGoal: 480,

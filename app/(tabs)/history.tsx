@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import Card from '../../src/components/Card';
 import BarChart from '../../src/components/BarChart';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { formatMinutes } from '../../src/data/mockData';
+import { formatMinutes, sourceLabel } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function HistoryScreen() {
@@ -137,9 +137,12 @@ export default function HistoryScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
                   <Text style={{ fontSize: 18 }}>{d.emoji}</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: theme.text }}>
-                      {d.dayLabel}, {d.date}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: theme.text }}>
+                        {d.dayLabel}, {d.date}
+                      </Text>
+                      <Text style={{ fontSize: 10, color: theme.textMuted }}>{sourceLabel(d.source).icon}</Text>
+                    </View>
                     <Text style={{ fontSize: 11, color: theme.textDim }}>
                       {d.bedtime} – {d.wakeTime} · {formatMinutes(d.totalMinutes)}
                     </Text>

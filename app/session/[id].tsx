@@ -11,7 +11,7 @@ import NoiseGraph from '../../src/components/NoiseGraph';
 import SnoringGraph from '../../src/components/SnoringGraph';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { formatMinutes } from '../../src/data/mockData';
+import { formatMinutes, sourceLabel } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function SessionDetailScreen() {
@@ -49,6 +49,10 @@ export default function SessionDetailScreen() {
               <Text style={{ fontSize: 24, fontWeight: '700', color: theme.text, marginTop: 2 }}>
                 {day.dayLabel}, {day.date}
               </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, alignSelf: 'flex-start', paddingVertical: 3, paddingHorizontal: 8, borderRadius: 10, backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder }}>
+                <Text style={{ fontSize: 11 }}>{sourceLabel(day.source).icon}</Text>
+                <Text style={{ fontSize: 11, color: theme.textDim, fontWeight: '600' }}>{sourceLabel(day.source).label}</Text>
+              </View>
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable
