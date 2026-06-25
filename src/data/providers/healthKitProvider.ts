@@ -51,10 +51,29 @@ interface RawSample {
   start: number;
   end: number;
   value: number;
-  prov?: string; // provenance code for sleep samples
+  prov?: string; // provenance code (watch/iphone/...) for the badge
+  srcKey?: string; // raw source id, used to dedupe overlapping sources
 }
 
 const OWN_BUNDLE = 'com.markutilitylabs.sleeptracker';
+
+const V = CategoryValueSleepAnalysis;
+const isInBed = (v: number) => v === V.inBed; // value 0
+const isAwakeV = (v: number) => v === V.awake; // value 2
+// asleepUnspecified and the legacy "asleep" share value 1.
+const isAsleepV = (v: number) =>
+  v === V.asleepCore || v === V.asleepDeep || v === V.asleepREM || v === V.asleepUnspecified;
+
+// A stable id for the writing source, so we can keep just one source per night
+// (Apple Health dedupes; summing every source double-counts time).
+function srcKeyOf(s: any): string {
+  return (
+    s?.sourceRevision?.source?.bundleIdentifier ||
+    s?.sourceRevision?.source?.name ||
+    s?.device?.name ||
+    'unknown'
+  );
+}
 
 // Read the true origin of a HealthKit sample from its device + sourceRevision.
 function provenanceOf(s: any): string {
@@ -97,12 +116,11 @@ function groupNights(samples: RawSample[]): RawSample[][] {
   return nights;
 }
 
-// Resample a night's stage segments into fixed 15-min slots so our charts
-// (which assume one stage per 15 min) render consistently. Each slot takes the
-// stage with the most overlap so short deep/REM blocks aren't dropped.
-function toStages(night: RawSample[], hrByTime: (t: number) => number): SleepStage[] {
-  const start = night[0].start;
-  const end = night[night.length - 1].end;
+// Resample stage segments into fixed 15-min slots — ONLY for the hypnogram
+// chart (the real stage durations are summed separately, not from these slots).
+// Each slot takes the stage with the most overlap so short blocks aren't lost.
+function toStages(segments: RawSample[], start: number, end: number, hrByTime: (t: number) => number): SleepStage[] {
+  const night = segments;
   const slotMs = 15 * 60 * 1000;
   const stages: SleepStage[] = [];
   for (let t = start; t < end; t += slotMs) {
@@ -151,34 +169,78 @@ function avg(nums: number[], fallback: number): number {
   return v.length ? v.reduce((a, b) => a + b, 0) / v.length : fallback;
 }
 
-async function buildDay(night: RawSample[], hrSamples: RawSample[], hrvSamples: RawSample[], respSamples: RawSample[], spo2Samples: RawSample[]): Promise<SleepDay> {
-  const start = night[0].start;
-  const end = night[night.length - 1].end;
-  const inWindow = (s: RawSample) => s.start >= start - 36e5 && s.end <= end + 36e5;
-  const hrIn = hrSamples.filter(inWindow);
-  const hrByTime = (t: number) => {
-    const near = hrIn.find(s => t >= s.start && t <= s.end);
-    return near ? near.value : avg(hrIn.map(s => s.value), 58);
-  };
+const fmtClock = (ms: number) => {
+  const d = new Date(ms);
+  return `${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+};
+const toMin = (ms: number) => Math.round(ms / 60000);
 
-  const stages = toStages(night, hrByTime);
-  const deepMinutes = countStageMinutes(stages, 3);
-  const remMinutes = countStageMinutes(stages, 1);
-  const lightMinutes = countStageMinutes(stages, 2);
-  const awakeMinutes = countStageMinutes(stages, 0);
+function buildDay(
+  nightAll: RawSample[],
+  hrSamples: RawSample[],
+  hrvSamples: RawSample[],
+  respSamples: RawSample[],
+  spo2Samples: RawSample[]
+): SleepDay {
+  // Apple Health dedupes overlapping sources; if we sum every source we
+  // double-count. Keep just the source with the most ASLEEP time (usually the
+  // Apple Watch) for stage durations.
+  const asleepBySrc: Record<string, number> = {};
+  for (const s of nightAll) {
+    if (isAsleepV(s.value)) {
+      const k = s.srcKey ?? 'unknown';
+      asleepBySrc[k] = (asleepBySrc[k] ?? 0) + (s.end - s.start);
+    }
+  }
+  const primaryKey = Object.keys(asleepBySrc).sort((a, b) => asleepBySrc[b] - asleepBySrc[a])[0];
+  const prim = primaryKey ? nightAll.filter(s => (s.srcKey ?? 'unknown') === primaryKey) : nightAll;
+
+  // Precise stage minutes = sum of actual segment durations (not 15-min slots).
+  let deepMs = 0, remMs = 0, lightMs = 0, awakeMs = 0;
+  let firstAsleep = Infinity, lastAsleep = -Infinity;
+  for (const s of prim) {
+    const dur = s.end - s.start;
+    if (s.value === V.asleepDeep) deepMs += dur;
+    else if (s.value === V.asleepREM) remMs += dur;
+    else if (s.value === V.asleepCore || s.value === V.asleepUnspecified) lightMs += dur;
+    else if (s.value === V.awake) awakeMs += dur;
+    if (isAsleepV(s.value)) {
+      firstAsleep = Math.min(firstAsleep, s.start);
+      lastAsleep = Math.max(lastAsleep, s.end);
+    }
+  }
+  const deepMinutes = toMin(deepMs);
+  const remMinutes = toMin(remMs);
+  const lightMinutes = toMin(lightMs);
   const totalMinutes = deepMinutes + remMinutes + lightMinutes;
-  const efficiency = computeEfficiency(totalMinutes, awakeMinutes);
+  const awakeMinutes = toMin(awakeMs);
+
+  // Bedtime = earliest "in bed" across all sources (the sleep schedule), else
+  // first asleep. Wake = last asleep end. Latency = bed → first asleep.
+  const inBeds = nightAll.filter(s => isInBed(s.value));
+  const bedStart = inBeds.length ? Math.min(...inBeds.map(s => s.start)) : firstAsleep;
+  const wakeEnd = lastAsleep > -Infinity ? lastAsleep : Math.max(...prim.map(s => s.end));
+  const bedtimeMs = Number.isFinite(bedStart) ? bedStart : nightAll[0].start;
+  const lightsOffMinutes = Number.isFinite(firstAsleep) && firstAsleep > bedtimeMs ? toMin(firstAsleep - bedtimeMs) : 0;
+
+  const timeInBed = Math.max(totalMinutes + awakeMinutes, toMin(wakeEnd - bedtimeMs));
+  const efficiency = timeInBed > 0 ? Math.round((totalMinutes / timeInBed) * 100) : 0;
   const rating = computeRating(efficiency, deepMinutes, totalMinutes);
   const sleepFuel = computeSleepFuel(efficiency, deepMinutes, remMinutes);
   const priorDayStress = 35;
   const readiness = computeReadiness(sleepFuel, priorDayStress, efficiency);
 
-  // Use 0 when a metric has no real samples for this night so the UI shows "—"
-  // instead of a fabricated value (older nights may be outside the HR window).
+  // Health metrics within the sleep window (0 => "—" in the UI).
+  const inWindow = (s: RawSample) => s.start >= bedtimeMs - 36e5 && s.end <= wakeEnd + 36e5;
+  const hrIn = hrSamples.filter(inWindow);
   const hrVals = hrIn.map(s => s.value);
   const hrvVals = hrvSamples.filter(inWindow).map(s => s.value);
   const respVals = respSamples.filter(inWindow).map(s => s.value);
   const spo2Vals = spo2Samples.filter(inWindow).map(s => s.value * 100);
+  const hrByTime = (t: number) => {
+    const near = hrIn.find(s => t >= s.start && t <= s.end);
+    return near ? near.value : avg(hrVals, 0);
+  };
   const health: HealthMetrics = {
     heartRateAvg: hrVals.length ? Math.round(avg(hrVals, 0)) : 0,
     heartRateMin: hrVals.length ? Math.round(Math.min(...hrVals)) : 0,
@@ -186,20 +248,24 @@ async function buildDay(night: RawSample[], hrSamples: RawSample[], hrvSamples: 
     hrv: hrvVals.length ? Math.round(avg(hrvVals, 0)) : 0,
     spo2: spo2Vals.length ? Math.round(avg(spo2Vals, 0) * 10) / 10 : 0,
     respRate: respVals.length ? Math.round(avg(respVals, 0) * 10) / 10 : 0,
-    wristTemp: 0, // not available without a Series 8+/Ultra wrist-temp sensor
+    wristTemp: 0,
   };
 
-  const sd = new Date(start);
-  const ed = new Date(end);
+  // Hypnogram chart: resample the primary source's asleep+awake segments.
+  const chartSegs = prim.filter(s => isAsleepV(s.value) || isAwakeV(s.value)).sort((a, b) => a.start - b.start);
+  const chartStart = Number.isFinite(firstAsleep) ? firstAsleep : bedtimeMs;
+  const stages = chartSegs.length ? toStages(chartSegs, chartStart, wakeEnd, hrByTime) : [];
+
+  const ed = new Date(wakeEnd);
   return {
     id: makeId(),
     source: 'healthkit',
-    healthSource: dominantProv(night),
+    healthSource: dominantProv(prim),
     date: `${monthNames[ed.getMonth()]} ${ed.getDate()}`,
     dayLabel: dayNames[ed.getDay()],
     isoDate: `${ed.getFullYear()}-${(ed.getMonth() + 1).toString().padStart(2, '0')}-${ed.getDate().toString().padStart(2, '0')}`,
-    bedtime: `${sd.getHours()}:${sd.getMinutes().toString().padStart(2, '0')}`,
-    wakeTime: `${ed.getHours()}:${ed.getMinutes().toString().padStart(2, '0')}`,
+    bedtime: fmtClock(bedtimeMs),
+    wakeTime: fmtClock(wakeEnd),
     totalMinutes,
     deepMinutes,
     remMinutes,
@@ -211,12 +277,11 @@ async function buildDay(night: RawSample[], hrSamples: RawSample[], hrvSamples: 
     health,
     readiness,
     sleepFuel,
-    lightsOffMinutes: 12,
+    lightsOffMinutes,
     priorDayStress,
     emoji: rating >= 80 ? '😌' : rating >= 60 ? '🙂' : '🥱',
     note: '',
     tags: [],
-    // Apnea/noise/snoring aren't in HealthKit; leave empty (UI hides/zeros them).
     apnea: { events: [], ahi: 0, riskScore: 0 },
     noise: [],
     snoring: [],
@@ -256,10 +321,15 @@ export const healthKitProvider: SleepDataSource = {
         limit: 0,
         ascending: true,
       } as any);
-      // Only count actual "asleep" stages, not "inBed".
-      sleepRaw = (res ?? [])
-        .filter((s: any) => s.value !== CategoryValueSleepAnalysis.inBed)
-        .map((s: any) => ({ start: +new Date(s.startDate), end: +new Date(s.endDate), value: s.value, prov: provenanceOf(s) }));
+      // Keep "in bed" too (used for bedtime + sleep latency); dedupe by source
+      // happens per-night in buildDay.
+      sleepRaw = (res ?? []).map((s: any) => ({
+        start: +new Date(s.startDate),
+        end: +new Date(s.endDate),
+        value: s.value,
+        prov: provenanceOf(s),
+        srcKey: srcKeyOf(s),
+      }));
     } catch {
       sleepRaw = [];
     }
@@ -278,7 +348,7 @@ export const healthKitProvider: SleepDataSource = {
     ]);
 
     const nights = groupNights(sleepRaw).filter(n => n.length > 0);
-    const days = await Promise.all(nights.map(n => buildDay(n, hr, hrv, resp, spo2)));
+    const days = nights.map(n => buildDay(n, hr, hrv, resp, spo2));
     // Oldest -> newest, matching mock provider ordering.
     return days.filter(d => d.totalMinutes > 0);
   },
