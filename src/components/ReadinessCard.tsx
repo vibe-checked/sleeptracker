@@ -7,12 +7,13 @@ import { useTheme } from '../themes/ThemeContext';
 interface Props {
   readiness: number;
   sleepFuel: number;
-  stress: number;
+  recovery: number;
+  restingHr: number;
   lightsOff: number;
   tonightBedtime: string;
 }
 
-export default function ReadinessCard({ readiness, sleepFuel, stress, lightsOff, tonightBedtime }: Props) {
+export default function ReadinessCard({ readiness, sleepFuel, recovery, restingHr, lightsOff, tonightBedtime }: Props) {
   const { theme } = useTheme();
   const label = readiness >= 80 ? 'Excellent' : readiness >= 60 ? 'Good' : readiness >= 40 ? 'Fair' : 'Low';
   const color = readiness >= 80 ? theme.positive : readiness >= 60 ? theme.accent : readiness >= 40 ? theme.ring2 : theme.negative;
@@ -38,8 +39,8 @@ export default function ReadinessCard({ readiness, sleepFuel, stress, lightsOff,
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 14 }}>
         <GaugeRing value={sleepFuel} size={70} color={theme.ring1} label="Sleep Fuel" />
-        <GaugeRing value={100 - stress} size={70} color={theme.ring3} label="Recovery" />
-        <GaugeRing value={Math.min(100, Math.round((1 - lightsOff / 30) * 100))} size={70} color={theme.ring2} label="Onset" />
+        <GaugeRing value={recovery} size={70} color={theme.ring3} label="Recovery" />
+        <GaugeRing value={Math.max(0, Math.min(100, Math.round((1 - lightsOff / 30) * 100)))} size={70} color={theme.ring2} label="Onset" />
       </View>
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -53,10 +54,10 @@ export default function ReadinessCard({ readiness, sleepFuel, stress, lightsOff,
         </View>
         <View style={{ flex: 1, backgroundColor: theme.accentDim, borderRadius: 12, padding: 10 }}>
           <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 2 }}>
-            Prior Day Stress
+            Resting HR
           </Text>
-          <Text style={{ fontSize: 18, fontWeight: '700', color: stress > 60 ? theme.negative : theme.text }}>
-            {stress}<Text style={{ fontSize: 12, color: theme.textDim, fontWeight: '400' }}> /100</Text>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
+            {restingHr > 0 ? restingHr : '—'}<Text style={{ fontSize: 12, color: theme.textDim, fontWeight: '400' }}>{restingHr > 0 ? ' bpm' : ''}</Text>
           </Text>
         </View>
       </View>

@@ -11,7 +11,7 @@ import NoiseGraph from '../../src/components/NoiseGraph';
 import SnoringGraph from '../../src/components/SnoringGraph';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { formatMinutes, sourceLabel } from '../../src/data/mockData';
+import { formatMinutes, sourceLabel, computeRecovery } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function SessionDetailScreen() {
@@ -155,12 +155,12 @@ export default function SessionDetailScreen() {
 
           <View style={{ height: 12 }} />
 
-          {/* Readiness / Fuel / Stress */}
+          {/* Readiness / Fuel / Recovery */}
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {[
               { label: 'Readiness', value: day.readiness, color: readinessColor },
               { label: 'Sleep Fuel', value: day.sleepFuel, color: theme.ring1 },
-              { label: 'Stress', value: day.priorDayStress, color: day.priorDayStress > 60 ? theme.negative : theme.text },
+              { label: 'Recovery', value: computeRecovery(day.health.hrv, day.efficiency), color: theme.ring3 },
             ].map((m, i) => (
               <Animated.View
                 key={m.label}

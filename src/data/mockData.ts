@@ -21,6 +21,7 @@ export {
   getTonightBedtime,
   exportSleepData,
   recomputeDerived,
+  computeRecovery,
   sourceLabel,
   DEFAULT_GOALS,
 } from './derive';

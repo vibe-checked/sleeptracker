@@ -14,6 +14,7 @@ import {
   computeRating,
   computeSleepFuel,
   computeReadiness,
+  computeRecovery,
 } from '../derive';
 import type { SleepDataSource } from './SleepDataSource';
 
@@ -149,7 +150,6 @@ export function generateDay(daysAgo: number): SleepDay {
   const lightsOffMinutes = 5 + Math.floor(Math.random() * 25);
   const priorDayStress = 20 + Math.floor(Math.random() * 60);
   const sleepFuel = computeSleepFuel(efficiency, deepMin, remMin);
-  const readiness = computeReadiness(sleepFuel, priorDayStress, efficiency, Math.random() * 10 - 5);
 
   const spo2 = Math.round((95 + Math.random() * 3) * 10) / 10;
   const health = {
@@ -161,6 +161,8 @@ export function generateDay(daysAgo: number): SleepDay {
     respRate: 13 + Math.round(Math.random() * 4 * 10) / 10,
     wristTemp: 35.2 + Math.round(Math.random() * 1.5 * 10) / 10,
   };
+  const recovery = computeRecovery(health.hrv, efficiency);
+  const readiness = computeReadiness(sleepFuel, recovery, efficiency, Math.random() * 10 - 5);
 
   const iso = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date
     .getDate()

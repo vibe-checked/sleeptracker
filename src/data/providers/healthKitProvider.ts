@@ -11,11 +11,10 @@ import {
 import type { SleepDay, SleepStage, HealthMetrics } from '../types';
 import { makeId } from './mockProvider';
 import {
-  countStageMinutes,
-  computeEfficiency,
   computeRating,
   computeSleepFuel,
   computeReadiness,
+  computeRecovery,
 } from '../derive';
 import type { SleepDataSource } from './SleepDataSource';
 
@@ -223,13 +222,6 @@ function buildDay(
   const bedtimeMs = Number.isFinite(bedStart) ? bedStart : nightAll[0].start;
   const lightsOffMinutes = Number.isFinite(firstAsleep) && firstAsleep > bedtimeMs ? toMin(firstAsleep - bedtimeMs) : 0;
 
-  const timeInBed = Math.max(totalMinutes + awakeMinutes, toMin(wakeEnd - bedtimeMs));
-  const efficiency = timeInBed > 0 ? Math.round((totalMinutes / timeInBed) * 100) : 0;
-  const rating = computeRating(efficiency, deepMinutes, totalMinutes);
-  const sleepFuel = computeSleepFuel(efficiency, deepMinutes, remMinutes);
-  const priorDayStress = 35;
-  const readiness = computeReadiness(sleepFuel, priorDayStress, efficiency);
-
   // Health metrics within the sleep window (0 => "—" in the UI).
   const inWindow = (s: RawSample) => s.start >= bedtimeMs - 36e5 && s.end <= wakeEnd + 36e5;
   const hrIn = hrSamples.filter(inWindow);
@@ -250,6 +242,13 @@ function buildDay(
     respRate: respVals.length ? Math.round(avg(respVals, 0) * 10) / 10 : 0,
     wristTemp: 0,
   };
+
+  const timeInBed = Math.max(totalMinutes + awakeMinutes, toMin(wakeEnd - bedtimeMs));
+  const efficiency = timeInBed > 0 ? Math.round((totalMinutes / timeInBed) * 100) : 0;
+  const rating = computeRating(efficiency, deepMinutes, totalMinutes);
+  const sleepFuel = computeSleepFuel(efficiency, deepMinutes, remMinutes);
+  const recovery = computeRecovery(health.hrv, efficiency);
+  const readiness = computeReadiness(sleepFuel, recovery, efficiency);
 
   // Hypnogram chart: resample the primary source's asleep+awake segments.
   const chartSegs = prim.filter(s => isAsleepV(s.value) || isAwakeV(s.value)).sort((a, b) => a.start - b.start);
@@ -278,7 +277,7 @@ function buildDay(
     readiness,
     sleepFuel,
     lightsOffMinutes,
-    priorDayStress,
+    priorDayStress: 0, // not measurable from sleep data; UI shows resting HR instead
     emoji: rating >= 80 ? '😌' : rating >= 60 ? '🙂' : '🥱',
     note: '',
     tags: [],
@@ -365,21 +364,27 @@ export async function seedHealthKitSampleNight(): Promise<boolean> {
   try {
     const now = new Date();
     const wake = new Date(now.getTime() - 30 * 60 * 1000);
-    const bed = new Date(wake.getTime() - 7.5 * 60 * 60 * 1000);
-    const slotMs = 15 * 60 * 1000;
-    const cycle = [2, 2, 3, 3, 2, 1, 2, 3, 2, 1, 0, 2, 1, 2, 1];
+    const bed = new Date(wake.getTime() - 8 * 60 * 60 * 1000); // 8h in bed
+    // A "time in bed" period, then asleep stages after a latency, in varied
+    // (non-15-min) chunks so the precise-duration path is exercised.
+    await saveCategorySample(SLEEP as any, CategoryValueSleepAnalysis.inBed as any, bed, wake);
     const toHKValue = (st: number) =>
       st === 0 ? CategoryValueSleepAnalysis.awake
       : st === 1 ? CategoryValueSleepAnalysis.asleepREM
       : st === 3 ? CategoryValueSleepAnalysis.asleepDeep
       : CategoryValueSleepAnalysis.asleepCore;
-    let i = 0;
-    for (let t = bed.getTime(); t < wake.getTime(); t += slotMs, i++) {
-      const st = cycle[i % cycle.length];
-      const s = new Date(t), e = new Date(t + slotMs);
+    // [stage, minutes] segments after an ~11-min latency.
+    const segs: [number, number][] = [
+      [2, 18], [3, 42], [2, 25], [1, 17], [0, 6], [2, 30], [3, 35], [2, 20],
+      [1, 22], [2, 28], [3, 18], [1, 24], [2, 32], [0, 8], [1, 19], [2, 26], [3, 12], [2, 40],
+    ];
+    let t = bed.getTime() + 11 * 60 * 1000;
+    for (const [st, mins] of segs) {
+      const s = new Date(t), e = new Date(t + mins * 60 * 1000);
       await saveCategorySample(SLEEP as any, toHKValue(st) as any, s, e);
       const hr = st === 3 ? 52 : st === 1 ? 62 : st === 0 ? 70 : 56;
       await saveQuantitySample(HR as any, 'count/min' as any, hr + Math.floor(Math.random() * 6 - 3), s, e);
+      t = e.getTime();
     }
     return true;
   } catch {

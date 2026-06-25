@@ -148,7 +148,7 @@ export function synthesizeFromLive(live: LiveSession, endedAt: number, extra: Tr
     readiness: 0,
     sleepFuel: 0,
     lightsOffMinutes: 10,
-    priorDayStress: 35,
+    priorDayStress: 0, // iPhone tracking can't measure stress; UI shows resting HR
     emoji: '😴',
     note: 'Tracked with iPhone',
     tags: [],

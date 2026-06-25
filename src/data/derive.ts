@@ -49,44 +49,39 @@ export function computeSleepFuel(efficiency: number, deepMin: number, remMin: nu
   return Math.min(100, Math.round(efficiency * 0.4 + (deepMin / 90) * 30 + (remMin / 120) * 30));
 }
 
+// Recovery from sleeping HRV (a real, measured signal). Typical sleeping SDNN
+// ~25–65 ms maps to 0–100. With no HRV (iPhone-only tracking) fall back to
+// efficiency so the gauge still reflects something real.
+export function computeRecovery(hrv: number, efficiency: number): number {
+  if (!hrv || hrv <= 0) return efficiency;
+  return Math.max(5, Math.min(100, Math.round(((hrv - 25) / 40) * 100)));
+}
+
+// Readiness = composite of sleep fuel, HRV-based recovery, and efficiency.
+// All inputs are derived from real data (no fabricated "stress").
 export function computeReadiness(
   sleepFuel: number,
-  priorDayStress: number,
+  recovery: number,
   efficiency: number,
   jitter = 0
 ): number {
   return Math.max(
     0,
-    Math.min(100, Math.round(sleepFuel * 0.4 + (100 - priorDayStress) * 0.3 + efficiency * 0.3 + jitter))
+    Math.min(100, Math.round(sleepFuel * 0.4 + recovery * 0.3 + efficiency * 0.3 + jitter))
   );
 }
 
-// Recompute every derived metric from the primitive fields (stages, stress, etc.).
-// Called after a user edits bed/wake times, tags, or notes so the card values stay
-// consistent. Deterministic: no jitter is applied on recompute.
+// Recompute the composite scores after an edit. Edits (bed/wake times, tags,
+// notes, emoji) don't change the measured stage minutes or efficiency, so those
+// are preserved exactly — important so editing a HealthKit night keeps its
+// precise, Apple-Health-matching durations.
 export function recomputeDerived(day: SleepDay): SleepDay {
-  const deepMinutes = countStageMinutes(day.stages, 3);
-  const remMinutes = countStageMinutes(day.stages, 1);
-  const lightMinutes = countStageMinutes(day.stages, 2);
-  const awakeMinutes = countStageMinutes(day.stages, 0);
-  const totalMinutes = deepMinutes + remMinutes + lightMinutes;
-  const efficiency = computeEfficiency(totalMinutes, awakeMinutes);
+  const { efficiency, deepMinutes, remMinutes, totalMinutes } = day;
   const rating = computeRating(efficiency, deepMinutes, totalMinutes);
   const sleepFuel = computeSleepFuel(efficiency, deepMinutes, remMinutes);
-  const readiness = computeReadiness(sleepFuel, day.priorDayStress, efficiency);
-
-  return {
-    ...day,
-    deepMinutes,
-    remMinutes,
-    lightMinutes,
-    awakeMinutes,
-    totalMinutes,
-    efficiency,
-    rating,
-    sleepFuel,
-    readiness,
-  };
+  const recovery = computeRecovery(day.health.hrv, efficiency);
+  const readiness = computeReadiness(sleepFuel, recovery, efficiency);
+  return { ...day, rating, sleepFuel, readiness };
 }
 
 export function formatMinutes(min: number): string {

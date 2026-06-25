@@ -12,7 +12,7 @@ import HealthCards from '../../src/components/HealthCards';
 import SleepBank from '../../src/components/SleepBank';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { formatMinutes, getTonightBedtime } from '../../src/data/mockData';
+import { formatMinutes, getTonightBedtime, computeRecovery } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function TodayScreen() {
@@ -192,7 +192,8 @@ export default function TodayScreen() {
           <ReadinessCard
             readiness={today.readiness}
             sleepFuel={today.sleepFuel}
-            stress={today.priorDayStress}
+            recovery={computeRecovery(today.health.hrv, today.efficiency)}
+            restingHr={today.health.heartRateMin}
             lightsOff={today.lightsOffMinutes}
             tonightBedtime={tonightBedtime}
           />
