@@ -1,19 +1,25 @@
 import { Tabs } from 'expo-router';
-import { Text, type ColorValue } from 'react-native';
+import { type ColorValue } from 'react-native';
+import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { useTheme } from '../../src/themes/ThemeContext';
 
-function TabIcon({ label, focused }: { label: string; focused: boolean; color: ColorValue }) {
-  const icons: Record<string, string> = {
-    Today: '☀',
-    Clock: '◎',
-    Explore: '◈',
-    History: '▤',
-    Settings: '⚙',
-  };
+// Native SF Symbols render reliably on iOS (unlike obscure Unicode glyphs).
+const SYMBOLS: Record<string, SFSymbol> = {
+  Today: 'sun.max.fill',
+  Clock: 'moon.stars.fill',
+  Explore: 'chart.line.uptrend.xyaxis',
+  History: 'calendar',
+  Settings: 'gearshape.fill',
+};
+
+function TabIcon({ label, focused, color }: { label: string; focused: boolean; color: ColorValue }) {
   return (
-    <Text style={{ fontSize: focused ? 22 : 18, opacity: focused ? 1 : 0.5 }}>
-      {icons[label] || '●'}
-    </Text>
+    <SymbolView
+      name={SYMBOLS[label] ?? 'circle.fill'}
+      size={focused ? 26 : 23}
+      tintColor={color}
+      weight={focused ? 'semibold' : 'regular'}
+    />
   );
 }
 

@@ -72,18 +72,35 @@ function groupNights(samples: RawSample[]): RawSample[][] {
 }
 
 // Resample a night's stage segments into fixed 15-min slots so our charts
-// (which assume one stage per 15 min) render consistently.
+// (which assume one stage per 15 min) render consistently. Each slot takes the
+// stage with the most overlap so short deep/REM blocks aren't dropped.
 function toStages(night: RawSample[], hrByTime: (t: number) => number): SleepStage[] {
   const start = night[0].start;
   const end = night[night.length - 1].end;
   const slotMs = 15 * 60 * 1000;
   const stages: SleepStage[] = [];
   for (let t = start; t < end; t += slotMs) {
-    const seg = night.find(s => t >= s.start && t < s.end) ?? night[night.length - 1];
+    const slotEnd = t + slotMs;
+    const overlap: Record<number, number> = {};
+    for (const s of night) {
+      const o = Math.min(slotEnd, s.end) - Math.max(t, s.start);
+      if (o > 0) {
+        const st = mapStage(s.value);
+        overlap[st] = (overlap[st] ?? 0) + o;
+      }
+    }
+    let stage = 2;
+    let best = -1;
+    for (const k of Object.keys(overlap)) {
+      if (overlap[+k] > best) {
+        best = overlap[+k];
+        stage = +k;
+      }
+    }
     const d = new Date(t);
     stages.push({
       time: `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`,
-      stage: mapStage(seg.value),
+      stage,
       heartRate: Math.round(hrByTime(t)) || 58,
     });
   }
