@@ -52,15 +52,18 @@ export default function TodayScreen() {
           </Text>
           <Pressable
             onPress={goTrack}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 15, paddingHorizontal: 28, borderRadius: 16, backgroundColor: theme.accent }}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 16, backgroundColor: theme.accent }}
           >
-            <Text style={{ fontSize: 16 }}>🌙</Text>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Start Sleep Tracking</Text>
+            <Text style={{ fontSize: 17 }}>📱</Text>
+            <View>
+              <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Track Sleep with iPhone</Text>
+              <Text style={{ fontSize: 11, color: '#000', opacity: 0.6, marginTop: 1 }}>No Apple Watch needed</Text>
+            </View>
           </Pressable>
           {isDevice && (
-            <Pressable onPress={syncHealth} disabled={syncing} style={{ marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={{ fontSize: 14 }}>❤️</Text>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: theme.accent }}>{syncing ? 'Syncing…' : 'Sync Apple Health'}</Text>
+            <Pressable onPress={syncHealth} disabled={syncing} style={{ marginTop: 16, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ fontSize: 14 }}>⌚</Text>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: theme.accent }}>{syncing ? 'Syncing…' : 'Have an Apple Watch? Sync from Health'}</Text>
             </Pressable>
           )}
         </SafeAreaView>
@@ -109,22 +112,25 @@ export default function TodayScreen() {
             </View>
           </Animated.View>
 
-          {/* Start Sleep Tracking (iPhone sensors) + optional Apple Health sync */}
+          {/* Track with iPhone (no watch) + optional Apple Health sync (watch) */}
           <Animated.View entering={FadeInUp.delay(50).duration(500)} style={{ marginBottom: 16 }}>
             <Pressable
               onPress={goTrack}
               style={{
                 flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                paddingVertical: 15, borderRadius: 16, backgroundColor: theme.accent,
+                paddingVertical: 14, borderRadius: 16, backgroundColor: theme.accent,
               }}
             >
-              <Text style={{ fontSize: 16 }}>🌙</Text>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Start Sleep Tracking</Text>
+              <Text style={{ fontSize: 17 }}>📱</Text>
+              <View>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Track Sleep with iPhone</Text>
+                <Text style={{ fontSize: 11, color: '#000', opacity: 0.6, marginTop: 1 }}>No Apple Watch needed · phone on the mattress</Text>
+              </View>
             </Pressable>
             {isDevice && (
               <Pressable onPress={syncHealth} disabled={syncing} style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 13 }}>❤️</Text>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: theme.accent }}>{syncing ? 'Syncing…' : 'Sync from Apple Health'}</Text>
+                <Text style={{ fontSize: 13 }}>⌚</Text>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: theme.accent }}>{syncing ? 'Syncing…' : 'Have an Apple Watch? Sync from Health'}</Text>
               </Pressable>
             )}
           </Animated.View>
