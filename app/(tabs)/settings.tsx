@@ -271,7 +271,7 @@ export default function SettingsScreen() {
               Your sleep and health data stays on this device. SleepTracker reads from Apple Health only with your permission and never uploads your data to any server.
             </Text>
             <Text style={{ fontSize: 12, color: theme.textMuted, marginTop: 10 }}>
-              Questions? monkeytree2019@gmail.com
+              Questions? mark@vibecode.review
             </Text>
           </Card>
 
