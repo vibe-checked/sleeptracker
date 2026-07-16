@@ -32,14 +32,7 @@ export default function StartSleepScreen() {
     <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }}>
       <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1 }}>
         <View style={{ flex: 1, padding: 24, justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <Pressable
-              onPress={() => router.back()}
-              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.cardBg, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', justifyContent: 'center' }}
-            >
-              <Text style={{ color: theme.textDim, fontSize: 16 }}>✕</Text>
-            </Pressable>
-          </View>
+          <View />
 
           <Animated.View entering={FadeInUp.duration(500)} style={{ alignItems: 'center' }}>
             <Text style={{ fontSize: 60, marginBottom: 16 }}>🌙</Text>
@@ -63,8 +56,25 @@ export default function StartSleepScreen() {
           </Animated.View>
 
           <Animated.View entering={FadeIn.delay(300)}>
-            <Pressable onPress={begin} style={{ paddingVertical: 18, borderRadius: 20, backgroundColor: theme.accent, alignItems: 'center' }}>
+            <Pressable
+              onPress={begin}
+              style={({ pressed }) => ({
+                paddingVertical: 18, borderRadius: 20, backgroundColor: theme.accent, alignItems: 'center',
+                opacity: pressed ? 0.75 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
+            >
               <Text style={{ fontSize: 17, fontWeight: '700', color: '#000' }}>Start Sleep Tracking</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.back()}
+              style={({ pressed }) => ({
+                marginTop: 12, paddingVertical: 14, borderRadius: 20, alignItems: 'center',
+                backgroundColor: theme.cardBg, borderWidth: 1, borderColor: theme.cardBorder,
+                opacity: pressed ? 0.75 : 1,
+              })}
+            >
+              <Text style={{ fontSize: 15, fontWeight: '600', color: theme.textDim }}>Not Now</Text>
             </Pressable>
             <Text style={{ fontSize: 11, color: theme.textMuted, textAlign: 'center', marginTop: 12 }}>
               Keep the app open. Tracking is simulated for this demo.

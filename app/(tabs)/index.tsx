@@ -52,7 +52,11 @@ export default function TodayScreen() {
           </Text>
           <Pressable
             onPress={goTrack}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 16, backgroundColor: theme.accent }}
+            style={({ pressed }) => ({
+              flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 16, backgroundColor: theme.accent,
+              opacity: pressed ? 0.75 : 1,
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            })}
           >
             <Text style={{ fontSize: 17 }}>📱</Text>
             <View>
@@ -116,15 +120,25 @@ export default function TodayScreen() {
           <Animated.View entering={FadeInUp.delay(50).duration(500)} style={{ marginBottom: 16 }}>
             <Pressable
               onPress={goTrack}
-              style={{
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                paddingVertical: 14, borderRadius: 16, backgroundColor: theme.accent,
-              }}
+              style={({ pressed }) => ({
+                flexDirection: 'row', alignItems: 'center', gap: 8,
+                paddingVertical: 14, paddingHorizontal: 16, borderRadius: 16, backgroundColor: theme.accent,
+                opacity: pressed ? 0.75 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
             >
               <Text style={{ fontSize: 17 }}>📱</Text>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 15, fontWeight: '700', color: '#000' }}>Track Sleep with iPhone</Text>
                 <Text style={{ fontSize: 11, color: '#000', opacity: 0.6, marginTop: 1 }}>No Apple Watch needed · phone on the mattress</Text>
+              </View>
+              <View style={{
+                paddingVertical: 6, paddingHorizontal: 12, borderRadius: 12,
+                backgroundColor: 'rgba(0,0,0,0.18)',
+                flexDirection: 'row', alignItems: 'center', gap: 4,
+              }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>Start</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#000' }}>›</Text>
               </View>
             </Pressable>
             {isDevice && (

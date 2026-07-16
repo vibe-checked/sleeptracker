@@ -2,13 +2,14 @@
   "expo": {
     "name": "SleepTracker",
     "slug": "sleeptracker",
-    "version": "1.0.0",
+    "version": "1.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sleeptracker",
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": false,
+      "buildNumber": "1",
       "bundleIdentifier": "com.markutilitylabs.sleeptracker",
       "infoPlist": {
         "UIBackgroundModes": ["audio"],
