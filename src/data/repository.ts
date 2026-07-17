@@ -1,5 +1,5 @@
 import type { SleepDay, LiveSession, SleepStage, NoiseSample, SnoringSample } from './types';
-import { recomputeDerived } from './derive';
+import { recomputeDerived, computeEfficiency } from './derive';
 import { mockProvider, makeId } from './providers/mockProvider';
 import type { SleepDataSource } from './providers/SleepDataSource';
 import { load, save, KEYS } from './persistence';
@@ -80,9 +80,9 @@ export function synthesizeFromLive(live: LiveSession, endedAt: number, extra: Tr
   const end = new Date(endedAt);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  // The live tracker records one sample per minute, but the rest of the app
-  // treats one stage entry as a 15-minute slot (countStageMinutes * 15). So
-  // downsample the per-minute samples into 15-minute slots before deriving.
+  // The live tracker records one sample per minute. Stage minutes are summed
+  // from the per-minute samples (1 sample = 1 min); the 15-min bins below are
+  // only for the hypnogram chart.
   const BIN = 15;
   const rawStages = (live.samples.length > 0 ? live.samples : [liveSample(0, 0)]).slice(-24 * 60);
   const rawNoise = (extra.noise ?? []).slice(-24 * 60);
@@ -107,9 +107,18 @@ export function synthesizeFromLive(live: LiveSession, endedAt: number, extra: Tr
     const csn = rawSnore.slice(i, i + BIN);
     if (csn.length) snoring.push({ time: csn[0].time, intensity: Math.max(0, ...csn.map(s => s.intensity)) });
   }
-  // Anchor bedtime to wake minus the night length (15 min per slot).
-  const nightMinutes = stages.length * BIN;
-  const start = new Date(endedAt - nightMinutes * 60 * 1000);
+  // Precise stage minutes: one per-minute sample = one minute of that stage.
+  const stageMin = (n: number) => rawStages.filter(s => s.stage === n).length;
+  const deepMinutes = stageMin(3);
+  const remMinutes = stageMin(1);
+  const lightMinutes = stageMin(2);
+  const awakeMinutes = stageMin(0);
+  const totalMinutes = deepMinutes + remMinutes + lightMinutes;
+  const efficiency = computeEfficiency(totalMinutes, awakeMinutes);
+
+  // Bedtime = when tracking actually started (bounded to the sampled window).
+  const startMs = Math.max(live.startedAt, endedAt - rawStages.length * 60 * 1000 - 60 * 1000);
+  const start = new Date(Math.min(startMs, endedAt));
 
   const hrs = stages.map(s => s.heartRate).filter(h => h > 0);
   const hasHR = extra.hasHeartRate !== false && hrs.length > 0;
@@ -126,12 +135,12 @@ export function synthesizeFromLive(live: LiveSession, endedAt: number, extra: Tr
     isoDate: iso,
     bedtime: `${start.getHours()}:${start.getMinutes().toString().padStart(2, '0')}`,
     wakeTime: `${end.getHours()}:${end.getMinutes().toString().padStart(2, '0')}`,
-    totalMinutes: 0,
-    deepMinutes: 0,
-    remMinutes: 0,
-    lightMinutes: 0,
-    awakeMinutes: 0,
-    efficiency: 0,
+    totalMinutes,
+    deepMinutes,
+    remMinutes,
+    lightMinutes,
+    awakeMinutes,
+    efficiency,
     rating: 0,
     stages,
     // Phone tracking has no heart-rate/SpO2/HRV/temp sensors → 0 = unavailable
@@ -147,7 +156,8 @@ export function synthesizeFromLive(live: LiveSession, endedAt: number, extra: Tr
     },
     readiness: 0,
     sleepFuel: 0,
-    lightsOffMinutes: 10,
+    // Sleep latency = minutes of "awake" samples before the first sleep sample.
+    lightsOffMinutes: Math.max(0, rawStages.findIndex(s => s.stage !== 0)),
     priorDayStress: 0, // iPhone tracking can't measure stress; UI shows resting HR
     emoji: '😴',
     note: 'Tracked with iPhone',

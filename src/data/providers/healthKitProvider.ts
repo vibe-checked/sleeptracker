@@ -106,13 +106,15 @@ function groupNights(samples: RawSample[]): RawSample[][] {
   const sorted = [...samples].sort((a, b) => a.start - b.start);
   const nights: RawSample[][] = [];
   let current: RawSample[] = [sorted[0]];
+  let maxEnd = sorted[0].end;
   const GAP = 3 * 60 * 60 * 1000;
   for (let i = 1; i < sorted.length; i++) {
-    if (sorted[i].start - current[current.length - 1].end > GAP) {
+    if (sorted[i].start - maxEnd > GAP) {
       nights.push(current);
       current = [];
     }
     current.push(sorted[i]);
+    maxEnd = Math.max(maxEnd, sorted[i].end);
   }
   nights.push(current);
   return nights;
@@ -249,7 +251,7 @@ function buildDay(
 
   const timeInBed = Math.max(totalMinutes + awakeMinutes, toMin(wakeEnd - bedtimeMs));
   const efficiency = timeInBed > 0 ? Math.round((totalMinutes / timeInBed) * 100) : 0;
-  const rating = computeRating(efficiency, deepMinutes, totalMinutes);
+  const rating = computeRating(efficiency, deepMinutes, remMinutes, totalMinutes);
   const sleepFuel = computeSleepFuel(efficiency, deepMinutes, remMinutes);
   const recovery = computeRecovery(health.hrv, efficiency);
   const readiness = computeReadiness(sleepFuel, recovery, efficiency);

@@ -19,7 +19,7 @@ export function sourceLabel(day: Pick<SleepDay, 'source' | 'healthSource'>): { l
     case 'tracked':
       return { label: 'iPhone', icon: '📱' };
     case 'manual':
-      return { label: 'Manual', icon: '✎' };
+      return { label: 'Manual', icon: '✏️' };
     default:
       return { label: 'Sample', icon: '✨' };
   }
@@ -40,13 +40,20 @@ export function computeEfficiency(totalMin: number, awakeMin: number): number {
   return Math.round((totalMin / (totalMin + awakeMin)) * 100);
 }
 
-export function computeRating(efficiency: number, deepMin: number, totalMin: number, jitter = 0): number {
+// Sleep rating out of 100: efficiency (45), deep sleep vs the ~90-min adult
+// norm (30), REM vs the ~105-min norm (25). Each component is capped so a
+// genuinely great night scores ~100 and an average one lands in the 70s-80s.
+export function computeRating(efficiency: number, deepMin: number, remMin: number, totalMin: number, jitter = 0): number {
   if (totalMin === 0) return 0;
-  return Math.min(100, Math.round(efficiency * 0.6 + (deepMin / totalMin) * 100 * 0.25 + jitter));
+  const deepScore = Math.min(deepMin / 90, 1) * 30;
+  const remScore = Math.min(remMin / 105, 1) * 25;
+  return Math.max(0, Math.min(100, Math.round(efficiency * 0.45 + deepScore + remScore + jitter)));
 }
 
 export function computeSleepFuel(efficiency: number, deepMin: number, remMin: number): number {
-  return Math.min(100, Math.round(efficiency * 0.4 + (deepMin / 90) * 30 + (remMin / 120) * 30));
+  const deepScore = Math.min(deepMin / 90, 1) * 30;
+  const remScore = Math.min(remMin / 120, 1) * 30;
+  return Math.min(100, Math.round(efficiency * 0.4 + deepScore + remScore));
 }
 
 // Recovery from sleeping HRV (a real, measured signal). Typical sleeping SDNN
@@ -77,7 +84,7 @@ export function computeReadiness(
 // precise, Apple-Health-matching durations.
 export function recomputeDerived(day: SleepDay): SleepDay {
   const { efficiency, deepMinutes, remMinutes, totalMinutes } = day;
-  const rating = computeRating(efficiency, deepMinutes, totalMinutes);
+  const rating = computeRating(efficiency, deepMinutes, remMinutes, totalMinutes);
   const sleepFuel = computeSleepFuel(efficiency, deepMinutes, remMinutes);
   const recovery = computeRecovery(day.health.hrv, efficiency);
   const readiness = computeReadiness(sleepFuel, recovery, efficiency);

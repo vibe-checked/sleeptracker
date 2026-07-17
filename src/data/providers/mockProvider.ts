@@ -145,7 +145,7 @@ export function generateDay(daysAgo: number): SleepDay {
   const awakeMin = countStageMinutes(stages, 0);
   const totalMin = deepMin + remMin + lightMin;
   const efficiency = computeEfficiency(totalMin, awakeMin);
-  const rating = computeRating(efficiency, deepMin, totalMin, Math.random() * 15);
+  const rating = computeRating(efficiency, deepMin, remMin, totalMin, Math.random() * 8 - 4);
 
   const lightsOffMinutes = 5 + Math.floor(Math.random() * 25);
   const priorDayStress = 20 + Math.floor(Math.random() * 60);

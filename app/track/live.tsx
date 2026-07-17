@@ -82,9 +82,8 @@ export default function LiveTrackingScreen() {
       }
       const stage = estimateStage(movement, slotIdx.current);
       const noise01 = dbToNoise(db);
-      const h = Math.floor(slotIdx.current / 60);
-      const m = slotIdx.current % 60;
-      const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      const now = new Date();
+      const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       recordSample(stage, 0, time); // no heart rate from the phone
       noiseRef.current.push({ time, db: Math.max(0, Math.round(db + 90)) });
       const snore = (stage === 2 || stage === 3) && noise01 > 50 ? noise01 : 0;
