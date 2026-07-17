@@ -77,7 +77,9 @@ export default function StartSleepScreen() {
               <Text style={{ fontSize: 15, fontWeight: '600', color: theme.textDim }}>Not Now</Text>
             </Pressable>
             <Text style={{ fontSize: 11, color: theme.textMuted, textAlign: 'center', marginTop: 12 }}>
-              Keep the app open. Tracking is simulated for this demo.
+              {isDevice
+                ? 'Keep the app open and your phone plugged in overnight.'
+                : 'Keep the app open. Tracking is simulated for this demo.'}
             </Text>
           </Animated.View>
         </View>
