@@ -21,6 +21,7 @@ HERO_SHOT = "today.png"                 # which raw to feature in the spanning h
 HERO_SW   = 1125
 HERO_TILT = -20
 HERO_PX   = 1050
+HERO_SPILL = 120                        # spill hero phone across 02->03 (continuous device)
 BULLETS = [                             # 4 value props (hero, left of phone)
     "Track with your iPhone — no watch needed",
     "Or sync your Apple Watch sleep",
