@@ -219,16 +219,13 @@ function buildDay(
   const totalMinutes = deepMinutes + remMinutes + lightMinutes;
   const awakeMinutes = toMin(awakeMs);
 
-  // Bedtime = earliest "in bed" across all sources (the sleep schedule), else
-  // the night's first sample INCLUDING leading awake time (the watch logs
-  // awake-in-bed before sleep onset), else first asleep. Latency = bed → first
-  // asleep; 0 therefore means "no pre-sleep data", which the UI shows as "—".
-  const inBeds = nightAll.filter(s => isInBed(s.value));
+  // Source priority: the primary MEASURED source (usually the watch) owns the
+  // whole timeline. iPhone "In Bed" records come from the configured Sleep
+  // Schedule — a plan, not a measurement — so they are ignored whenever a
+  // measured source covers the night. Bedtime = the primary source's first
+  // sample (including leading awake time before sleep onset).
   const nightFirst = prim.length ? Math.min(...prim.map(s => s.start)) : firstAsleep;
-  // An In Bed record from another source (sleep schedule, other apps) can
-  // disagree with the watch's asleep samples; bedtime must never be later
-  // than the first recorded sleep, so take the earliest of both.
-  const bedStart = inBeds.length ? Math.min(Math.min(...inBeds.map(s => s.start)), nightFirst) : nightFirst;
+  const bedStart = nightFirst;
   const wakeEnd = lastAsleep > -Infinity ? lastAsleep : Math.max(...prim.map(s => s.end));
   const bedtimeMs = Number.isFinite(bedStart) ? bedStart : nightAll[0].start;
   const lightsOffMinutes = Number.isFinite(firstAsleep) && firstAsleep > bedtimeMs ? toMin(firstAsleep - bedtimeMs) : 0;
