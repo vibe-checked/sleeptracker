@@ -22,7 +22,7 @@ export default function ReadinessCard({ readiness, sleepFuel, recovery, restingH
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <View>
           <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600' }}>
-            Readiness
+            Today's Readiness
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
             <Text style={{ fontSize: 32, fontWeight: '700', color }}>{readiness}</Text>
