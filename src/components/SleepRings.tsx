@@ -114,14 +114,14 @@ export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, 
             {Math.round(labelPercent ?? sleepPercent)}%
           </Text>
           <Text style={{
-            fontSize: size > 200 ? 12 : 10,
+            fontSize: size > 200 ? 16 : 14,
             color: theme.text,
             opacity: 0.85,
             fontWeight: '600',
             marginTop: 2,
             letterSpacing: 0.5,
           }}>
-            {goalLabel ?? 'overall rating'}
+            {goalLabel ?? 'overall'}
           </Text>
         </View>
       )}

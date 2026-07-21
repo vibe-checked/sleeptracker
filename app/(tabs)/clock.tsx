@@ -68,7 +68,7 @@ export default function ClockScreen() {
               qualityPercent={qualityPercent}
               deepPercent={deepPercent}
               labelPercent={today.rating}
-              goalLabel="overall rating"
+              goalLabel="overall"
               theme={theme}
               size={260}
             />
