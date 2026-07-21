@@ -209,6 +209,7 @@ export default function TodayScreen() {
             readiness={today.readiness}
             sleepFuel={today.sleepFuel}
             recovery={computeRecovery(today.health.hrv, today.efficiency)}
+            efficiency={today.efficiency}
             restingHr={today.health.heartRateMin}
             awakeMin={today.awakeMinutes}
           />

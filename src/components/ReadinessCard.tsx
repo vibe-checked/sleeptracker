@@ -8,14 +8,17 @@ interface Props {
   readiness: number;
   sleepFuel: number;
   recovery: number;
+  efficiency: number;
   restingHr: number;
   awakeMin: number;
 }
 
-export default function ReadinessCard({ readiness, sleepFuel, recovery, restingHr, awakeMin }: Props) {
+export default function ReadinessCard({ readiness, sleepFuel, recovery, efficiency, restingHr, awakeMin }: Props) {
   const { theme } = useTheme();
   const label = readiness >= 80 ? 'Excellent' : readiness >= 60 ? 'Good' : readiness >= 40 ? 'Fair' : 'Low';
-  const color = readiness >= 80 ? theme.positive : readiness >= 60 ? theme.accent : readiness >= 40 ? theme.ring2 : theme.negative;
+  // Deliberately NOT one of the ring colors (cyan/green/purple) so the
+  // headline can't be mistaken for one of the gauges.
+  const color = theme.text;
 
   return (
     <Card delay={150}>
@@ -34,6 +37,7 @@ export default function ReadinessCard({ readiness, sleepFuel, recovery, restingH
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 14 }}>
         <GaugeRing value={sleepFuel} size={70} color={theme.ring1} label="Sleep Fuel" />
         <GaugeRing value={recovery} size={70} color={theme.ring3} label="Recovery" />
+        <GaugeRing value={efficiency} size={70} color={theme.ring2} label="Efficiency" />
       </View>
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
