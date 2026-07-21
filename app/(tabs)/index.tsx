@@ -168,7 +168,7 @@ export default function TodayScreen() {
                 sleepPercent={sleepPercent}
                 qualityPercent={qualityPercent}
                 deepPercent={deepPercent}
-                goalLabel="overall"
+                goalLabel="OVERALL"
                 labelPercent={today.rating}
                 labelBelow
                 theme={theme}
