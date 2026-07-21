@@ -208,7 +208,6 @@ export default function TodayScreen() {
             recovery={computeRecovery(today.health.hrv, today.efficiency)}
             restingHr={today.health.heartRateMin}
             awakeMin={today.awakeMinutes}
-            tonightBedtime={tonightBedtime}
           />
 
           <View style={{ height: 16 }} />

@@ -10,10 +10,9 @@ interface Props {
   recovery: number;
   restingHr: number;
   awakeMin: number;
-  tonightBedtime: string;
 }
 
-export default function ReadinessCard({ readiness, sleepFuel, recovery, restingHr, awakeMin, tonightBedtime }: Props) {
+export default function ReadinessCard({ readiness, sleepFuel, recovery, restingHr, awakeMin }: Props) {
   const { theme } = useTheme();
   const label = readiness >= 80 ? 'Excellent' : readiness >= 60 ? 'Good' : readiness >= 40 ? 'Fair' : 'Low';
   const color = readiness >= 80 ? theme.positive : readiness >= 60 ? theme.accent : readiness >= 40 ? theme.ring2 : theme.negative;
@@ -29,11 +28,6 @@ export default function ReadinessCard({ readiness, sleepFuel, recovery, restingH
             <Text style={{ fontSize: 32, fontWeight: '700', color }}>{readiness}</Text>
             <Text style={{ fontSize: 13, color, fontWeight: '600' }}>{label}</Text>
           </View>
-        </View>
-        <View style={{ backgroundColor: theme.accentDim, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 }}>
-          <Text style={{ fontSize: 11, color: theme.textDim }}>
-            Bedtime: <Text style={{ color: theme.accent, fontWeight: '700' }}>{tonightBedtime}</Text>
-          </Text>
         </View>
       </View>
 
