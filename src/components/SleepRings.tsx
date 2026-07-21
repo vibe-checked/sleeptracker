@@ -83,26 +83,28 @@ interface Props {
   theme: Theme;
   size?: number;
   goalLabel?: string; // e.g. "of 8h goal"
+  labelBelow?: boolean; // render the % label under the rings instead of inside
 }
 
-export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, theme, size = 220, goalLabel }: Props) {
+export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, theme, size = 220, goalLabel, labelBelow }: Props) {
   const isSmall = size < 100;
-  const sw = isSmall ? 4 : 12;
-  const gap = isSmall ? 7 : 18;
+  const isMedium = !isSmall && size < 180;
+  const sw = isSmall ? 4 : isMedium ? 9 : 12;
+  const gap = isSmall ? 7 : isMedium ? 13 : 18;
   const center = size / 2;
-  const outerR = center - (isSmall ? 4 : 20);
+  const outerR = center - (isSmall ? 4 : isMedium ? 8 : 20);
   const midR = outerR - gap;
   const innerR = midR - gap;
 
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: size, height: labelBelow ? undefined : size, alignItems: 'center', justifyContent: 'center' }}>
       <Svg width={size} height={size}>
         <Ring radius={outerR} percent={sleepPercent} color={theme.ring1} glowColor={theme.ring1Glow} strokeWidth={sw} delay={0} center={center} />
         <Ring radius={midR} percent={qualityPercent} color={theme.ring2} glowColor={theme.ring2Glow} strokeWidth={sw} delay={150} center={center} />
         <Ring radius={innerR} percent={deepPercent} color={theme.ring3} glowColor={theme.ring3Glow} strokeWidth={sw} delay={300} center={center} />
       </Svg>
       {!isSmall && (
-        <View style={{ position: 'absolute', alignItems: 'center' }}>
+        <View style={labelBelow ? { alignItems: 'center', marginTop: 8, flexDirection: 'row', gap: 6, alignSelf: 'center' } : { position: 'absolute', alignItems: 'center' }}>
           <Text style={{
             fontSize: size > 200 ? 32 : 22,
             fontWeight: '700',

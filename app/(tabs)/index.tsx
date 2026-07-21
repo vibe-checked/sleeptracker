@@ -76,7 +76,7 @@ export default function TodayScreen() {
   }
 
   const sleepPercent = Math.round((today.totalMinutes / goals.sleepGoal) * 100);
-  const qualityPercent = Math.round((today.rating / goals.qualityGoal) * 100);
+  const qualityPercent = today.rating; // purple ring shows the rating itself, not vs the target
   const deepPercent = Math.round((today.deepMinutes / goals.deepGoal) * 100);
   const tonightBedtime = getTonightBedtime(sessions, goals, smartAlarm);
 
@@ -169,8 +169,9 @@ export default function TodayScreen() {
                 qualityPercent={qualityPercent}
                 deepPercent={deepPercent}
                 goalLabel={`of ${formatMinutes(goals.sleepGoal)}`}
+                labelBelow
                 theme={theme}
-                size={150}
+                size={126}
               />
               <View style={{ flex: 1, marginLeft: 16, gap: 10 }}>
                 {stats.map(item => (
