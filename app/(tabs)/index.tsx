@@ -18,7 +18,7 @@ import { useSleepData } from '../../src/data/SleepDataContext';
 export default function TodayScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { today, sessions, goals, loading, isDevice, dataSource, connectHealth, syncFromHealth } = useSleepData();
+  const { today, sessions, goals, smartAlarm, loading, isDevice, dataSource, connectHealth, syncFromHealth } = useSleepData();
   const [syncing, setSyncing] = useState(false);
 
   const goTrack = () => router.push('/track');
@@ -78,7 +78,7 @@ export default function TodayScreen() {
   const sleepPercent = Math.round((today.totalMinutes / goals.sleepGoal) * 100);
   const qualityPercent = Math.round((today.rating / goals.qualityGoal) * 100);
   const deepPercent = Math.round((today.deepMinutes / goals.deepGoal) * 100);
-  const tonightBedtime = getTonightBedtime(sessions, goals);
+  const tonightBedtime = getTonightBedtime(sessions, goals, smartAlarm);
 
   const stats = [
     { label: 'Total Sleep', value: formatMinutes(today.totalMinutes), color: theme.ring1 },

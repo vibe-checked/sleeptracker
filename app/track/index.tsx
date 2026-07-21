@@ -14,7 +14,7 @@ export default function StartSleepScreen() {
   const router = useRouter();
   const { sessions, goals, smartAlarm, startTracking, isDevice } = useSleepData();
 
-  const tonight = getTonightBedtime(sessions, goals);
+  const tonight = getTonightBedtime(sessions, goals, smartAlarm);
   const alarmLabel = (() => {
     const h = smartAlarm.wakeHour;
     const ampm = h >= 12 ? 'PM' : 'AM';

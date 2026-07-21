@@ -124,15 +124,35 @@ function formatClockMinutes(totalMin: number): string {
   return `${h}:${m.toString().padStart(2, '0')}`;
 }
 
-export function getTonightBedtime(history: SleepDay[], goals: SleepGoals): string {
+// Suggested bedtime = wake-up time minus the sleep goal minus a 15-min
+// wind-down buffer, so hitting it actually delivers the goal. Wake-up comes
+// from the smart alarm when enabled, else the average wake time of the last
+// week, else 7:00. When behind on sleep (negative bank) nudge 15-30 min
+// earlier to help pay the debt back.
+export function getTonightBedtime(
+  history: SleepDay[],
+  goals: SleepGoals,
+  alarm?: { enabled: boolean; wakeHour: number; wakeMin: number }
+): string {
   const recent = history.slice(-7);
-  if (recent.length === 0) return '22:30';
-  let adjusted = avgBedtimeMinutes(recent);
+  let wakeMinutes: number;
+  if (alarm?.enabled) {
+    wakeMinutes = alarm.wakeHour * 60 + alarm.wakeMin;
+  } else if (recent.length > 0) {
+    wakeMinutes =
+      recent.reduce((s, d) => {
+        const [h, m] = d.wakeTime.split(':').map(Number);
+        return s + h * 60 + (m || 0);
+      }, 0) / recent.length;
+  } else {
+    wakeMinutes = 7 * 60;
+  }
+  let bedtime = wakeMinutes - goals.sleepGoal - 15;
   const bankBalance = getSleepBank(history, goals);
   const lastBalance = bankBalance[bankBalance.length - 1] ?? 0;
-  if (lastBalance < -60) adjusted -= 30; // behind on sleep → suggest earlier
-  if (lastBalance < -120) adjusted -= 30;
-  return formatClockMinutes(adjusted);
+  if (lastBalance < -60) bedtime -= 15; // behind on sleep → a bit earlier
+  if (lastBalance < -120) bedtime -= 15;
+  return formatClockMinutes(bedtime);
 }
 
 export function avgBedtime(days: SleepDay[]): string {

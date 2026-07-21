@@ -7,8 +7,8 @@ import { useTheme } from '../themes/ThemeContext';
 
 export default function SleepConsistency() {
   const { theme } = useTheme();
-  const { sessions, goals } = useSleepData();
-  const tonightBedtime = getTonightBedtime(sessions, goals);
+  const { sessions, goals, smartAlarm } = useSleepData();
+  const tonightBedtime = getTonightBedtime(sessions, goals, smartAlarm);
 
   const recent = sessions.slice(-7);
   const avgBed = avgBedtime(recent);
