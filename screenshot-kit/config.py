@@ -7,7 +7,7 @@ TITLE_SIZE  = 100                       # shrink if the name is long (e.g. 96)
 ICON        = "../assets/images/icon.png"  # path to the 1024px app icon (relative to this folder)
 
 RAW_DIR     = "raw"                     # where your raw simulator screenshots live
-OUT_DIR     = "../app-store-screenshots"  # final 01..0N land here (upload to App Store Connect)
+OUT_DIR     = "../marketing/screenshots/next"  # final 01..0N land here (upload to App Store Connect)
 
 # Brand — sampled from the app icon (deep navy gradient, cyan/violet/teal rings).
 BG_STOPS      = [(22, 32, 77), (11, 18, 48), (5, 8, 15)]  # gradient top->bottom
@@ -34,7 +34,7 @@ PANEL_SW = 1150
 # Feature panels (screens 3+). One tuple each:
 #   (label, headline, raw_filename, "low"|"high", subtitle)
 PANELS = [
-    ("rings",   "*Sleep* *rings* at a glance",        "rings.png",   "low",  "Duration, quality & deep sleep at a glance"),
+    ("rings",   "*Sleep* *rings* at a glance",        "rings.png",   "low",  "Duration, quality & deep sleep in three rings"),
     ("track",   "Track with *just* your *iPhone*",     "track.png",   "high", "Uses motion + mic — no Apple Watch required"),
     ("health",  "Syncs your *Apple* *Health*",         "session.png", "low",  "Real sleep stages, heart rate & HRV from your watch"),
     ("explore", "*Months* of trends",                  "explore.png", "high", "Charts, correlations & your best nights"),
