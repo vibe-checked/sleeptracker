@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import Card from './Card';
 import BarChart from './BarChart';
-import { getSleepBank } from '../data/mockData';
+import { getSleepBank, formatMinutes } from '../data/mockData';
 import { useSleepData } from '../data/SleepDataContext';
 import { useTheme } from '../themes/ThemeContext';
 
@@ -31,9 +31,8 @@ export default function SleepBank() {
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
             <Text style={{ fontSize: 24, fontWeight: '700', color: isPositive ? theme.positive : theme.negative }}>
-              {isPositive ? '+' : ''}{Math.round(current)}
+              {isPositive ? '+' : '−'}{formatMinutes(Math.abs(Math.round(current)))}
             </Text>
-            <Text style={{ fontSize: 12, color: theme.textDim }}>min</Text>
           </View>
         </View>
         <View style={{
@@ -45,6 +44,9 @@ export default function SleepBank() {
           </Text>
         </View>
       </View>
+      <Text style={{ fontSize: 11, color: theme.textDim, marginBottom: 10 }}>
+        How far your last 7 tracked nights run ahead (+) or behind (−) your {formatMinutes(goals.sleepGoal)} goal, night by night.
+      </Text>
       <BarChart data={data} width={chartWidth} height={130} theme={theme} />
     </Card>
   );
