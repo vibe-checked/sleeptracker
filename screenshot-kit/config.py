@@ -25,7 +25,7 @@ HERO_SPILL = 120                        # spill hero phone across 02->03 (contin
 BULLETS = [                             # 4 value props (hero, left of phone)
     "Track with your iPhone — no watch needed",
     "Or sync your Apple Watch sleep",
-    "Stages, heart rate, HRV & trends",
+    "Sleep Stages, heart rate, HRV & trends",
     "Free forever — no catch",
 ]
 
