@@ -82,11 +82,12 @@ interface Props {
   deepPercent: number;
   theme: Theme;
   size?: number;
-  goalLabel?: string; // e.g. "of 8h goal"
+  goalLabel?: string; // text under/next to the % label
+  labelPercent?: number; // value for the % label (defaults to sleepPercent)
   labelBelow?: boolean; // render the % label under the rings instead of inside
 }
 
-export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, theme, size = 220, goalLabel, labelBelow }: Props) {
+export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, theme, size = 220, goalLabel, labelPercent, labelBelow }: Props) {
   const isSmall = size < 100;
   const isMedium = !isSmall && size < 180;
   const sw = isSmall ? 4 : isMedium ? 9 : 12;
@@ -110,7 +111,7 @@ export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, 
             fontWeight: '700',
             color: theme.text,
           }}>
-            {Math.round(sleepPercent)}%
+            {Math.round(labelPercent ?? sleepPercent)}%
           </Text>
           <Text style={{
             fontSize: size > 200 ? 12 : 10,
@@ -120,7 +121,7 @@ export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, 
             marginTop: 2,
             letterSpacing: 0.5,
           }}>
-            {goalLabel ?? 'of sleep goal'}
+            {goalLabel ?? 'overall rating'}
           </Text>
         </View>
       )}
