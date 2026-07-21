@@ -25,8 +25,11 @@ export default function SessionDetailScreen() {
 
   if (!day) {
     return (
-      <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 18 }}>
         <Text style={{ color: theme.text }}>Session not found</Text>
+        <Pressable onPress={() => router.back()} style={{ paddingVertical: 10, paddingHorizontal: 24, borderRadius: 14, backgroundColor: theme.accent }}>
+          <Text style={{ fontSize: 14, fontWeight: '700', color: '#000' }}>Go Back</Text>
+        </Pressable>
       </LinearGradient>
     );
   }

@@ -12,7 +12,6 @@ import {
   CategoryValueSleepAnalysis,
 } from '@kingstinct/react-native-healthkit';
 import type { SleepDay, SleepStage, HealthMetrics } from '../types';
-import { makeId } from './mockProvider';
 import {
   computeRating,
   computeSleepFuel,
@@ -269,7 +268,9 @@ function buildDay(
 
   const ed = new Date(wakeEnd);
   return {
-    id: makeId(),
+    // Stable id per night (wake minute) so re-syncs keep existing ids —
+    // otherwise every sync invalidates open detail screens and history rows.
+    id: `hk_${Math.round(wakeEnd / 60000)}`,
     source: 'healthkit',
     healthSource: dominantProv(prim),
     date: `${monthNames[ed.getMonth()]} ${ed.getDate()}`,

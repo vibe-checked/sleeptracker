@@ -28,6 +28,22 @@ import { AppState } from 'react-native';
 // device -> real Apple Health data; simulator -> mock data.
 export const IS_DEVICE = Device.isDevice;
 
+// Merge a fresh HealthKit pull into the existing list: keep non-Health
+// sessions (iPhone-tracked, manual), and for Health nights carry over the
+// user's edits/notes/tags from the stored copy with the same stable id.
+function mergeHealthSessions(prev: SleepDay[], hk: SleepDay[]): SleepDay[] {
+  const prevById = new Map(prev.map(s => [s.id, s]));
+  const merged = hk.map(d => {
+    const old = prevById.get(d.id);
+    if (!old) return d;
+    if (old.edited) return old; // user-adjusted nights win over re-imports
+    return { ...d, emoji: old.emoji || d.emoji, note: old.note || d.note, tags: old.tags.length ? old.tags : d.tags };
+  });
+  const rest = prev.filter(s => s.source !== 'healthkit');
+  const key = (s: SleepDay) => `${s.isoDate}T${s.wakeTime.padStart(5, '0')}`;
+  return [...rest, ...merged].sort((a, b) => (key(a) < key(b) ? -1 : 1));
+}
+
 const DEFAULT_SETTINGS: SleepSettings = { temperatureUnit: 'C' };
 const DEFAULT_ALARM: SmartAlarmConfig = { enabled: true, wakeHour: 7, wakeMin: 0, windowMin: 30 };
 
@@ -117,8 +133,11 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
           try {
             const hk = await healthKitProvider.getSessions(180);
             if (mounted && hk.length > 0) {
-              setSessions(hk);
-              persistSessions(hk);
+              setSessions(prev => {
+                const next = mergeHealthSessions(prev, hk);
+                persistSessions(next);
+                return next;
+              });
             }
           } catch {
             // keep stored
@@ -240,7 +259,13 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
     if (!authorized) return { authorized: false, imported: 0 };
     setDataSource(healthKitProvider);
     const hk = await healthKitProvider.getSessions(180);
-    if (hk.length > 0) writeSessions(hk);
+    if (hk.length > 0) {
+      setSessions(prev => {
+        const next = mergeHealthSessions(prev, hk);
+        persistSessions(next);
+        return next;
+      });
+    }
     setDataSourceState('healthkit');
     save(KEYS.dataSource, 'healthkit');
     return { authorized: true, imported: hk.length };
@@ -248,9 +273,15 @@ export function SleepDataProvider({ children }: { children: React.ReactNode }) {
 
   const syncFromHealth = useCallback(async () => {
     const hk = await healthKitProvider.getSessions(180);
-    if (hk.length > 0) writeSessions(hk);
+    if (hk.length > 0) {
+      setSessions(prev => {
+        const next = mergeHealthSessions(prev, hk);
+        persistSessions(next);
+        return next;
+      });
+    }
     return hk.length;
-  }, [writeSessions]);
+  }, []);
 
   const seedHealthSample = useCallback(() => seedHealthKitSampleNight(), []);
 
