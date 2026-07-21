@@ -7,7 +7,7 @@ TITLE_SIZE  = 100                       # shrink if the name is long (e.g. 96)
 ICON        = "../assets/images/icon.png"  # path to the 1024px app icon (relative to this folder)
 
 RAW_DIR     = "raw"                     # where your raw simulator screenshots live
-OUT_DIR     = "../marketing/screenshots/next"  # final 01..0N land here (upload to App Store Connect)
+OUT_DIR     = "../marketing/screenshots"  # final 01..0N land here (upload to App Store Connect)
 
 # Brand — sampled from the app icon (deep navy gradient, cyan/violet/teal rings).
 BG_STOPS      = [(22, 32, 77), (11, 18, 48), (5, 8, 15)]  # gradient top->bottom
