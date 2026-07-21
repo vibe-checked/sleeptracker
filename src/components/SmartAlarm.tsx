@@ -66,7 +66,7 @@ export default function SmartAlarm() {
               <Pressable onPress={() => bump('wakeHour', 24, 1, 1)} style={arrowStyle(theme)}>
                 <Text style={{ color: theme.textMuted, fontSize: 10 }}>▲</Text>
               </Pressable>
-              <Text style={{ fontSize: 40, fontWeight: '700', color: theme.text, width: 56, textAlign: 'center', marginVertical: 4 }}>
+              <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 40, fontWeight: '700', color: theme.text, minWidth: 64, textAlign: 'center', marginVertical: 4 }}>
                 {wakeHour.toString().padStart(2, '0')}
               </Text>
               <Pressable onPress={() => bump('wakeHour', 24, 1, -1)} style={arrowStyle(theme)}>
@@ -81,7 +81,7 @@ export default function SmartAlarm() {
               <Pressable onPress={() => bump('wakeMin', 60, 5, 1)} style={arrowStyle(theme)}>
                 <Text style={{ color: theme.textMuted, fontSize: 10 }}>▲</Text>
               </Pressable>
-              <Text style={{ fontSize: 40, fontWeight: '700', color: theme.text, width: 56, textAlign: 'center', marginVertical: 4 }}>
+              <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 40, fontWeight: '700', color: theme.text, minWidth: 64, textAlign: 'center', marginVertical: 4 }}>
                 {wakeMin.toString().padStart(2, '0')}
               </Text>
               <Pressable onPress={() => bump('wakeMin', 60, 5, -1)} style={arrowStyle(theme)}>
