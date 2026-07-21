@@ -63,7 +63,7 @@ export default function SessionDetailScreen() {
                   alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 5,
                 }}
               >
-                <Text style={{ fontSize: 13 }}>✎</Text>
+                <Text style={{ fontSize: 13 }}>✏️</Text>
                 <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>Edit</Text>
               </Pressable>
               <Pressable
@@ -142,7 +142,6 @@ export default function SessionDetailScreen() {
               {[
                 { label: 'Bedtime', value: day.bedtime },
                 { label: 'Wake', value: day.wakeTime },
-                { label: 'Lights Off', value: day.source === 'healthkit' && day.lightsOffMinutes === 0 ? '—' : `${day.lightsOffMinutes}m` },
                 { label: 'Awake', value: formatMinutes(day.awakeMinutes) },
               ].map(t => (
                 <View key={t.label} style={{ flex: 1, alignItems: 'center' }}>

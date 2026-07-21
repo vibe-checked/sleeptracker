@@ -9,11 +9,11 @@ interface Props {
   sleepFuel: number;
   recovery: number;
   restingHr: number;
-  lightsOff: number | null; // null = not measurable for this night
+  awakeMin: number;
   tonightBedtime: string;
 }
 
-export default function ReadinessCard({ readiness, sleepFuel, recovery, restingHr, lightsOff, tonightBedtime }: Props) {
+export default function ReadinessCard({ readiness, sleepFuel, recovery, restingHr, awakeMin, tonightBedtime }: Props) {
   const { theme } = useTheme();
   const label = readiness >= 80 ? 'Excellent' : readiness >= 60 ? 'Good' : readiness >= 40 ? 'Fair' : 'Low';
   const color = readiness >= 80 ? theme.positive : readiness >= 60 ? theme.accent : readiness >= 40 ? theme.ring2 : theme.negative;
@@ -40,16 +40,15 @@ export default function ReadinessCard({ readiness, sleepFuel, recovery, restingH
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 14 }}>
         <GaugeRing value={sleepFuel} size={70} color={theme.ring1} label="Sleep Fuel" />
         <GaugeRing value={recovery} size={70} color={theme.ring3} label="Recovery" />
-        <GaugeRing value={lightsOff == null ? 0 : Math.max(0, Math.min(100, Math.round((1 - lightsOff / 30) * 100)))} size={70} color={theme.ring2} label="Onset" />
       </View>
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <View style={{ flex: 1, backgroundColor: theme.accentDim, borderRadius: 12, padding: 10 }}>
           <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 2 }}>
-            Lights Off
+            Awake
           </Text>
           <Text style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
-            {lightsOff == null ? '—' : lightsOff}<Text style={{ fontSize: 12, color: theme.textDim, fontWeight: '400' }}>{lightsOff == null ? '' : ' min'}</Text>
+            {awakeMin}<Text style={{ fontSize: 12, color: theme.textDim, fontWeight: '400' }}> min</Text>
           </Text>
         </View>
         <View style={{ flex: 1, backgroundColor: theme.accentDim, borderRadius: 12, padding: 10 }}>

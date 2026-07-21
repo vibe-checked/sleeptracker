@@ -185,7 +185,6 @@ export default function TodayScreen() {
               {[
                 { label: 'Bedtime', value: today.bedtime },
                 { label: 'Wake', value: today.wakeTime },
-                { label: 'Lights Off', value: today.source === 'healthkit' && today.lightsOffMinutes === 0 ? '—' : `${today.lightsOffMinutes}m` },
                 { label: 'Awake', value: formatMinutes(today.awakeMinutes) },
               ].map(item => (
                 <View key={item.label} style={{ flex: 1, alignItems: 'center' }}>
@@ -208,7 +207,7 @@ export default function TodayScreen() {
             sleepFuel={today.sleepFuel}
             recovery={computeRecovery(today.health.hrv, today.efficiency)}
             restingHr={today.health.heartRateMin}
-            lightsOff={today.source === 'healthkit' && today.lightsOffMinutes === 0 ? null : today.lightsOffMinutes}
+            awakeMin={today.awakeMinutes}
             tonightBedtime={tonightBedtime}
           />
 

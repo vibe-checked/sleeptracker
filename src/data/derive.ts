@@ -144,14 +144,14 @@ export function exportSleepData(history: SleepDay[]): string {
   const headers = [
     'Date', 'Day', 'Bedtime', 'Wake', 'Total (min)', 'Deep (min)', 'REM (min)',
     'Light (min)', 'Awake (min)', 'Efficiency %', 'Rating', 'Readiness', 'Sleep Fuel',
-    'Lights Off (min)', 'Stress', 'HR Avg', 'HR Min', 'HR Max', 'HRV', 'SpO2',
+    'Stress', 'HR Avg', 'HR Min', 'HR Max', 'HRV', 'SpO2',
     'Resp Rate', 'Wrist Temp', 'AHI', 'Apnea Risk', 'Tags', 'Emoji', 'Note',
   ];
   const rows = history.map(d =>
     [
       d.date, d.dayLabel, d.bedtime, d.wakeTime,
       d.totalMinutes, d.deepMinutes, d.remMinutes, d.lightMinutes, d.awakeMinutes,
-      d.efficiency, d.rating, d.readiness, d.sleepFuel, d.lightsOffMinutes, d.priorDayStress,
+      d.efficiency, d.rating, d.readiness, d.sleepFuel, d.priorDayStress,
       d.health.heartRateAvg, d.health.heartRateMin, d.health.heartRateMax,
       d.health.hrv, d.health.spo2, d.health.respRate, d.health.wristTemp,
       d.apnea.ahi, d.apnea.riskScore,
