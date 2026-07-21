@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -96,6 +96,13 @@ export default function TodayScreen() {
           style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={syncing}
+              onRefresh={syncHealth}
+              tintColor={theme.accent}
+            />
+          }
         >
           {/* Header */}
           <Animated.View entering={FadeInUp.duration(500)} style={{ marginBottom: 20 }}>

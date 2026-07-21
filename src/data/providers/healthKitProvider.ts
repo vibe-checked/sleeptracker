@@ -199,39 +199,51 @@ function buildDay(
   const primaryKey = Object.keys(asleepBySrc).sort((a, b) => asleepBySrc[b] - asleepBySrc[a])[0];
   const prim = primaryKey ? nightAll.filter(s => (s.srcKey ?? 'unknown') === primaryKey) : nightAll;
 
-  // Precise stage minutes = sum of actual segment durations (not 15-min slots).
-  let deepMs = 0, remMs = 0, lightMs = 0, awakeMs = 0;
-  let firstAsleep = Infinity, lastAsleep = -Infinity;
-  for (const s of prim) {
-    const dur = s.end - s.start;
-    if (s.value === V.asleepDeep) deepMs += dur;
-    else if (s.value === V.asleepREM) remMs += dur;
-    else if (s.value === V.asleepCore || s.value === V.asleepUnspecified) lightMs += dur;
-    else if (s.value === V.awake) awakeMs += dur;
-    if (isAsleepV(s.value)) {
-      firstAsleep = Math.min(firstAsleep, s.start);
-      lastAsleep = Math.max(lastAsleep, s.end);
+  // Apple Health arithmetic: durations are interval UNIONS (overlaps merged),
+  // each stage is truncated (floored) to whole minutes independently, and the
+  // total is the floor of the EXACT union — so numbers match the Health app
+  // digit for digit, even when the stages don't sum to the total.
+  const unionMs = (segs: RawSample[]): number => {
+    if (segs.length === 0) return 0;
+    const sorted = [...segs].sort((a, b) => a.start - b.start);
+    let total = 0, curS = sorted[0].start, curE = sorted[0].end;
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i].start <= curE) curE = Math.max(curE, sorted[i].end);
+      else { total += curE - curS; curS = sorted[i].start; curE = sorted[i].end; }
     }
+    return total + (curE - curS);
+  };
+  const floorMin = (ms: number) => Math.floor(ms / 60000);
+  const deepSegs = prim.filter(s => s.value === V.asleepDeep);
+  const remSegs = prim.filter(s => s.value === V.asleepREM);
+  const lightSegs = prim.filter(s => s.value === V.asleepCore || s.value === V.asleepUnspecified);
+  const awakeSegs = prim.filter(s => s.value === V.awake);
+  const asleepSegs = prim.filter(s => isAsleepV(s.value));
+  let firstAsleep = Infinity, lastAsleep = -Infinity;
+  for (const s of asleepSegs) {
+    firstAsleep = Math.min(firstAsleep, s.start);
+    lastAsleep = Math.max(lastAsleep, s.end);
   }
-  const deepMinutes = toMin(deepMs);
-  const remMinutes = toMin(remMs);
-  const lightMinutes = toMin(lightMs);
-  const totalMinutes = deepMinutes + remMinutes + lightMinutes;
-  const awakeMinutes = toMin(awakeMs);
+  const deepMinutes = floorMin(unionMs(deepSegs));
+  const remMinutes = floorMin(unionMs(remSegs));
+  const lightMinutes = floorMin(unionMs(lightSegs));
+  const totalMinutes = floorMin(unionMs(asleepSegs));
+  const awakeMinutes = floorMin(unionMs(awakeSegs));
 
-  // Source priority: the primary MEASURED source (usually the watch) owns the
-  // whole timeline. iPhone "In Bed" records come from the configured Sleep
-  // Schedule — a plan, not a measurement — so they are ignored whenever a
-  // measured source covers the night. Bedtime = the primary source's first
-  // sample (including leading awake time before sleep onset).
+  // Bedtime matches Apple Health's Time in Bed start: the earliest of the
+  // In Bed record and the measured source's first sample. Stage durations
+  // above stay measured-source-only.
+  const inBeds = nightAll.filter(s => isInBed(s.value));
   const nightFirst = prim.length ? Math.min(...prim.map(s => s.start)) : firstAsleep;
-  const bedStart = nightFirst;
+  const bedStart = inBeds.length ? Math.min(Math.min(...inBeds.map(s => s.start)), nightFirst) : nightFirst;
   const wakeEnd = lastAsleep > -Infinity ? lastAsleep : Math.max(...prim.map(s => s.end));
   const bedtimeMs = Number.isFinite(bedStart) ? bedStart : nightAll[0].start;
   const lightsOffMinutes = Number.isFinite(firstAsleep) && firstAsleep > bedtimeMs ? toMin(firstAsleep - bedtimeMs) : 0;
 
-  // Health metrics within the sleep window (0 => "—" in the UI).
-  const inWindow = (s: RawSample) => s.start >= bedtimeMs - 36e5 && s.end <= wakeEnd + 36e5;
+  // Health metrics strictly within the sleep session (first asleep → wake),
+  // matching Apple Health's "during sleep" ranges (0 => "—" in the UI).
+  const sessionStart = Number.isFinite(firstAsleep) ? firstAsleep : bedtimeMs;
+  const inWindow = (s: RawSample) => s.end > sessionStart && s.start < wakeEnd;
   const hrIn = hrSamples.filter(inWindow);
   const hrVals = hrIn.map(s => s.value);
   const hrvVals = hrvSamples.filter(inWindow).map(s => s.value);
