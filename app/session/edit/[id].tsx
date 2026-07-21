@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, TextInput } from 'react-native';
+import { ScrollView, View, Text, Pressable, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -64,6 +64,18 @@ export default function SessionEditScreen() {
   };
 
   const save = () => {
+    // The bed→wake window must be able to contain the recorded sleep;
+    // otherwise the stats become impossible (e.g. 8h sleep in a 2h window).
+    let windowMin = wakeH * 60 + wakeM - (bedH * 60 + bedM);
+    if (windowMin <= 0) windowMin += 24 * 60;
+    const neededMin = day.totalMinutes + day.awakeMinutes;
+    if (windowMin < neededMin) {
+      Alert.alert(
+        'Times don’t fit the recorded sleep',
+        `This night has ${Math.floor(neededMin / 60)}h ${neededMin % 60}m of recorded sleep and awake time, but the times you set leave only ${Math.floor(windowMin / 60)}h ${windowMin % 60}m between bedtime and wake-up. Adjust the times so the window is at least that long.`
+      );
+      return;
+    }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     updateSession(id, {
       bedtime: fmtTime(bedH, bedM),
