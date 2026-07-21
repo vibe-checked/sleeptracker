@@ -217,6 +217,8 @@ export default function TodayScreen() {
           <SleepConsistency />
 
           <View style={{ height: 16 }} />
+
+          <View style={{ height: 16 }} />
           <Card delay={200}>
             <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 12 }}>
               Sleep Stages
