@@ -10,7 +10,7 @@ import type {
   SnoringSample,
 } from './types';
 import type { SleepSource } from './types';
-import { DEFAULT_GOALS, recomputeDerived } from './derive';
+import { DEFAULT_GOALS, recomputeDerived, mergeHealthSessions } from './derive';
 import {
   initSessions,
   persistSessions,
@@ -27,22 +27,6 @@ import { AppState } from 'react-native';
 // true on a real iPhone, false on the iOS Simulator. Drives the core rule:
 // device -> real Apple Health data; simulator -> mock data.
 export const IS_DEVICE = Device.isDevice;
-
-// Merge a fresh HealthKit pull into the existing list: keep non-Health
-// sessions (iPhone-tracked, manual), and for Health nights carry over the
-// user's edits/notes/tags from the stored copy with the same stable id.
-function mergeHealthSessions(prev: SleepDay[], hk: SleepDay[]): SleepDay[] {
-  const prevById = new Map(prev.map(s => [s.id, s]));
-  const merged = hk.map(d => {
-    const old = prevById.get(d.id);
-    if (!old) return d;
-    if (old.edited) return old; // user-adjusted nights win over re-imports
-    return { ...d, emoji: old.emoji || d.emoji, note: old.note || d.note, tags: old.tags.length ? old.tags : d.tags };
-  });
-  const rest = prev.filter(s => s.source !== 'healthkit');
-  const key = (s: SleepDay) => `${s.isoDate}T${s.wakeTime.padStart(5, '0')}`;
-  return [...rest, ...merged].sort((a, b) => (key(a) < key(b) ? -1 : 1));
-}
 
 const DEFAULT_SETTINGS: SleepSettings = { temperatureUnit: 'C' };
 const DEFAULT_ALARM: SmartAlarmConfig = { enabled: true, wakeHour: 7, wakeMin: 0, windowMin: 30 };

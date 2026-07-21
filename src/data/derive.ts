@@ -181,3 +181,38 @@ export function exportSleepData(history: SleepDay[]): string {
   );
   return [headers.join(','), ...rows].join('\n');
 }
+
+// Merge a fresh HealthKit pull into the existing list: keep non-Health
+// sessions (iPhone-tracked, manual), and for Health nights carry over the
+// user's edits/notes/tags from the stored copy with the same stable id.
+export function mergeHealthSessions(prev: SleepDay[], hk: SleepDay[]): SleepDay[] {
+  const prevById = new Map(prev.map(s => [s.id, s]));
+  const merged = hk.map(d => {
+    const old = prevById.get(d.id);
+    if (!old) return d;
+    if (old.edited) return old; // user-adjusted nights win over re-imports
+    return { ...d, emoji: old.emoji || d.emoji, note: old.note || d.note, tags: old.tags.length ? old.tags : d.tags };
+  });
+  // Auto-merge duplicate nights: when a phone-tracked session covers the same
+  // night as a Health/watch night, the watch keeps every metric it measures
+  // (stages, times, HR — so numbers keep matching Apple Health) and the phone
+  // contributes only what the watch can't record: snoring and room noise.
+  const byIso = new Map(merged.map((d, i) => [d.isoDate, i]));
+  const rest: SleepDay[] = [];
+  for (const s of prev) {
+    if (s.source === 'healthkit') continue;
+    const idx = s.source === 'tracked' ? byIso.get(s.isoDate) : undefined;
+    if (idx !== undefined) {
+      const hkNight = merged[idx];
+      merged[idx] = {
+        ...hkNight,
+        snoring: hkNight.snoring.length ? hkNight.snoring : s.snoring,
+        noise: hkNight.noise.length ? hkNight.noise : s.noise,
+      };
+      continue; // fold the phone session into the watch night, drop the duplicate
+    }
+    rest.push(s);
+  }
+  const key = (s: SleepDay) => `${s.isoDate}T${s.wakeTime.padStart(5, '0')}`;
+  return [...rest, ...merged].sort((a, b) => (key(a) < key(b) ? -1 : 1));
+}
