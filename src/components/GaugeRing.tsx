@@ -17,12 +17,19 @@ interface Props {
   size: number;
   color: string;
   label: string;
+  // 'ring' = closed circle (default). 'gauge' = thinner speedometer-style
+  // open arc with a gap at the bottom and rounded caps.
+  variant?: 'ring' | 'gauge';
 }
 
-export default function GaugeRing({ value, size, color, label }: Props) {
+export default function GaugeRing({ value, size, color, label, variant = 'ring' }: Props) {
   const { theme } = useTheme();
   const r = size / 2 - 6;
   const circ = 2 * Math.PI * r;
+  const isGauge = variant === 'gauge';
+  const arcLen = isGauge ? circ * 0.75 : circ; // 270° sweep for the gauge
+  const rotation = isGauge ? 135 : -90; // gauge: gap centered at the bottom
+  const sw = isGauge ? 4 : 5;
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -36,25 +43,36 @@ export default function GaugeRing({ value, size, color, label }: Props) {
   }, [value]);
 
   const animatedProps = useAnimatedProps(() => ({
-    strokeDashoffset: circ - circ * progress.value,
+    strokeDashoffset: arcLen - arcLen * progress.value,
   }));
 
   return (
     <View style={{ alignItems: 'center' }}>
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
         <Svg width={size} height={size}>
-          <Circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={5} opacity={0.12} />
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={color}
+            strokeWidth={sw}
+            opacity={0.14}
+            strokeLinecap="round"
+            strokeDasharray={isGauge ? `${arcLen} ${circ}` : undefined}
+            transform={`rotate(${rotation}, ${size / 2}, ${size / 2})`}
+          />
           <AnimatedCircle
             cx={size / 2}
             cy={size / 2}
             r={r}
             fill="none"
             stroke={color}
-            strokeWidth={5}
+            strokeWidth={sw}
             strokeLinecap="round"
-            strokeDasharray={`${circ}`}
+            strokeDasharray={`${arcLen} ${circ}`}
             animatedProps={animatedProps}
-            transform={`rotate(-90, ${size / 2}, ${size / 2})`}
+            transform={`rotate(${rotation}, ${size / 2}, ${size / 2})`}
           />
         </Svg>
         <View style={{ position: 'absolute' }}>

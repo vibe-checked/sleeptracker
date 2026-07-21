@@ -35,9 +35,11 @@ export default function ReadinessCard({ readiness, sleepFuel, recovery, efficien
       </View>
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 14 }}>
-        <GaugeRing value={sleepFuel} size={70} color={theme.ring1} label="Sleep Fuel" />
-        <GaugeRing value={recovery} size={70} color={theme.ring3} label="Recovery" />
-        <GaugeRing value={efficiency} size={70} color={theme.ring2} label="Efficiency" />
+        {/* Warm gauge palette — deliberately distinct from the briefing
+            rings' cyan/purple/green so the two cards don't read as related. */}
+        <GaugeRing variant="gauge" value={sleepFuel} size={70} color="#fbbf24" label="Sleep Fuel" />
+        <GaugeRing variant="gauge" value={recovery} size={70} color="#2dd4bf" label="Recovery" />
+        <GaugeRing variant="gauge" value={efficiency} size={70} color="#94a3b8" label="Efficiency" />
       </View>
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
