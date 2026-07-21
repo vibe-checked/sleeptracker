@@ -58,7 +58,7 @@ export default function SleepConsistency() {
           </Text>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 0.8, textTransform: 'uppercase' }}>Tonight</Text>
+          <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 0.8, textTransform: 'uppercase' }}>Suggested Bedtime</Text>
           <Text style={{ fontSize: 15, fontWeight: '700', color: theme.accent, marginTop: 2 }}>
             {tonightBedtime}
           </Text>
