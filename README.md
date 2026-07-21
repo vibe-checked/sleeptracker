@@ -1,6 +1,6 @@
 # SleepTracker
 
-A comprehensive sleep tracking mobile app inspired by [AutoSleep](https://apps.apple.com/us/app/autosleep-watch-sleep-tracker/id1164801111). Built with React Native (Expo), Expo Router, and react-native-svg.
+A comprehensive sleep tracking mobile app for Apple Watch and iPhone. Built with React Native (Expo), Expo Router, and react-native-svg.
 
 ## Features
 

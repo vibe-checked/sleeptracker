@@ -34,7 +34,7 @@ PANEL_SW = 1150
 # Feature panels (screens 3+). One tuple each:
 #   (label, headline, raw_filename, "low"|"high", subtitle)
 PANELS = [
-    ("rings",   "*Sleep* *rings* at a glance",        "rings.png",   "low",  "Duration, quality & deep sleep — like AutoSleep"),
+    ("rings",   "*Sleep* *rings* at a glance",        "rings.png",   "low",  "Duration, quality & deep sleep at a glance"),
     ("track",   "Track with *just* your *iPhone*",     "track.png",   "high", "Uses motion + mic — no Apple Watch required"),
     ("health",  "Syncs your *Apple* *Health*",         "session.png", "low",  "Real sleep stages, heart rate & HRV from your watch"),
     ("explore", "*Months* of trends",                  "explore.png", "high", "Charts, correlations & your best nights"),

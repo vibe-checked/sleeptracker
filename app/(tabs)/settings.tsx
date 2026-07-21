@@ -283,7 +283,6 @@ export default function SettingsScreen() {
               SleepTracker
             </Text>
             <Text style={{ fontSize: 12, color: theme.textMuted }}>Version 1.0.0</Text>
-            <Text style={{ fontSize: 12, color: theme.textMuted, marginTop: 6 }}>Inspired by AutoSleep</Text>
           </Card>
         </ScrollView>
       </SafeAreaView>

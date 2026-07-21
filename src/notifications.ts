@@ -23,7 +23,7 @@ export async function ensureNotificationPermission(): Promise<boolean> {
 }
 
 // Subtract the smart window so the alarm fires at the *start* of the window
-// (the lightest-sleep target), mirroring AutoSleep's behavior.
+// (the lightest-sleep target).
 function windowStart(config: SmartAlarmConfig): { hour: number; minute: number } {
   let total = config.wakeHour * 60 + config.wakeMin - config.windowMin;
   total = ((total % 1440) + 1440) % 1440;

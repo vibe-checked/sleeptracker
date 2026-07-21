@@ -82,9 +82,10 @@ interface Props {
   deepPercent: number;
   theme: Theme;
   size?: number;
+  goalLabel?: string; // e.g. "of 8h goal"
 }
 
-export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, theme, size = 220 }: Props) {
+export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, theme, size = 220, goalLabel }: Props) {
   const isSmall = size < 100;
   const sw = isSmall ? 4 : 12;
   const gap = isSmall ? 7 : 18;
@@ -110,13 +111,14 @@ export default function SleepRings({ sleepPercent, qualityPercent, deepPercent, 
             {Math.round(sleepPercent)}%
           </Text>
           <Text style={{
-            fontSize: size > 200 ? 11 : 9,
-            color: theme.textDim,
+            fontSize: size > 200 ? 12 : 10,
+            color: theme.text,
+            opacity: 0.85,
+            fontWeight: '600',
             marginTop: 2,
-            letterSpacing: 1.5,
-            textTransform: 'uppercase',
+            letterSpacing: 0.5,
           }}>
-            sleep goal
+            {goalLabel ?? 'of sleep goal'}
           </Text>
         </View>
       )}
