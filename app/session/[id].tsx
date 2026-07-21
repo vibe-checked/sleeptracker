@@ -142,7 +142,7 @@ export default function SessionDetailScreen() {
               {[
                 { label: 'Bedtime', value: day.bedtime },
                 { label: 'Wake', value: day.wakeTime },
-                { label: 'Lights Off', value: `${day.lightsOffMinutes}m` },
+                { label: 'Lights Off', value: day.source === 'healthkit' && day.lightsOffMinutes === 0 ? '—' : `${day.lightsOffMinutes}m` },
                 { label: 'Awake', value: formatMinutes(day.awakeMinutes) },
               ].map(t => (
                 <View key={t.label} style={{ flex: 1, alignItems: 'center' }}>

@@ -221,9 +221,12 @@ function buildDay(
   const awakeMinutes = toMin(awakeMs);
 
   // Bedtime = earliest "in bed" across all sources (the sleep schedule), else
-  // first asleep. Wake = last asleep end. Latency = bed → first asleep.
+  // the night's first sample INCLUDING leading awake time (the watch logs
+  // awake-in-bed before sleep onset), else first asleep. Latency = bed → first
+  // asleep; 0 therefore means "no pre-sleep data", which the UI shows as "—".
   const inBeds = nightAll.filter(s => isInBed(s.value));
-  const bedStart = inBeds.length ? Math.min(...inBeds.map(s => s.start)) : firstAsleep;
+  const nightFirst = prim.length ? Math.min(...prim.map(s => s.start)) : firstAsleep;
+  const bedStart = inBeds.length ? Math.min(...inBeds.map(s => s.start)) : nightFirst;
   const wakeEnd = lastAsleep > -Infinity ? lastAsleep : Math.max(...prim.map(s => s.end));
   const bedtimeMs = Number.isFinite(bedStart) ? bedStart : nightAll[0].start;
   const lightsOffMinutes = Number.isFinite(firstAsleep) && firstAsleep > bedtimeMs ? toMin(firstAsleep - bedtimeMs) : 0;

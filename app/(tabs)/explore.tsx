@@ -156,14 +156,29 @@ export default function ExploreScreen() {
 
           <View style={{ height: 16 }} />
 
-          {/* Correlation */}
+          {/* Correlation, translated to plain English */}
           <Card delay={300}>
-            <SectionTitle>Deep Sleep vs Rating</SectionTitle>
+            <SectionTitle>Does Deep Sleep Help You?</SectionTitle>
             <ScatterChart points={scatterPoints} width={chartWidth} theme={theme} yLabel="Rating" xLabel="Deep (min) →" />
-            <Text style={{ fontSize: 12, color: theme.textDim, marginTop: 8 }}>
-              Correlation: <Text style={{ fontWeight: '700', color: deepRatingCorr > 0.3 ? theme.positive : theme.text }}>{deepRatingCorr.toFixed(2)}</Text>
-              {deepRatingCorr > 0.3 ? ' — more deep sleep tracks with better nights' : ''}
-            </Text>
+            {(() => {
+              const r = deepRatingCorr;
+              const verdict =
+                r >= 0.6 ? { emoji: '💪', label: 'Yes — a lot', text: 'On nights with more deep sleep, you almost always feel better. Protect it: consistent bedtime, cool dark room.', color: theme.positive }
+                : r >= 0.3 ? { emoji: '👍', label: 'Yes — somewhat', text: 'More deep sleep usually means a better night for you.', color: theme.positive }
+                : r <= -0.3 ? { emoji: '🤔', label: 'Surprisingly, no', text: 'Your better nights don’t line up with deep sleep. Other factors matter more for you.', color: theme.textDim }
+                : { emoji: '🤷', label: 'No clear pattern yet', text: 'Not enough of a pattern so far. Keep tracking — this gets smarter with more nights.', color: theme.textDim };
+              return (
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 12, backgroundColor: theme.accentDim, borderRadius: 12, padding: 12 }}>
+                  <Text style={{ fontSize: 22 }}>{verdict.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: verdict.color, marginBottom: 2 }}>{verdict.label}</Text>
+                    <Text style={{ fontSize: 12, color: theme.textDim, lineHeight: 17 }}>
+                      Each dot is one night. {verdict.text}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })()}
           </Card>
 
           <View style={{ height: 16 }} />

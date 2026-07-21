@@ -19,11 +19,13 @@ export default function SleepConsistency() {
         Sleep Consistency
       </Text>
 
-      <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 55 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 55, overflow: 'hidden' }}>
         {recent.map((d, i) => {
-          const [h] = d.bedtime.split(':').map(Number);
-          const bedHour = h >= 20 ? h : h + 24;
-          const barHeight = Math.max(8, ((bedHour - 21) / 3) * 45);
+          const [h, m] = d.bedtime.split(':').map(Number);
+          const bedHour = (h >= 20 ? h : h + 24) + (m || 0) / 60;
+          // Scale 20:00 → 8px up to 04:00 → 45px, clamped so late nights
+          // can never overflow the card.
+          const barHeight = Math.max(8, Math.min(45, ((bedHour - 20) / 8) * 45));
           const isToday = i === 6;
           return (
             <View key={i} style={{ flex: 1, alignItems: 'center', gap: 4 }}>

@@ -9,7 +9,7 @@ interface Props {
   sleepFuel: number;
   recovery: number;
   restingHr: number;
-  lightsOff: number;
+  lightsOff: number | null; // null = not measurable for this night
   tonightBedtime: string;
 }
 
@@ -40,7 +40,7 @@ export default function ReadinessCard({ readiness, sleepFuel, recovery, restingH
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 14 }}>
         <GaugeRing value={sleepFuel} size={70} color={theme.ring1} label="Sleep Fuel" />
         <GaugeRing value={recovery} size={70} color={theme.ring3} label="Recovery" />
-        <GaugeRing value={Math.max(0, Math.min(100, Math.round((1 - lightsOff / 30) * 100)))} size={70} color={theme.ring2} label="Onset" />
+        <GaugeRing value={lightsOff == null ? 0 : Math.max(0, Math.min(100, Math.round((1 - lightsOff / 30) * 100)))} size={70} color={theme.ring2} label="Onset" />
       </View>
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -49,7 +49,7 @@ export default function ReadinessCard({ readiness, sleepFuel, recovery, restingH
             Lights Off
           </Text>
           <Text style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
-            {lightsOff}<Text style={{ fontSize: 12, color: theme.textDim, fontWeight: '400' }}> min</Text>
+            {lightsOff == null ? '—' : lightsOff}<Text style={{ fontSize: 12, color: theme.textDim, fontWeight: '400' }}>{lightsOff == null ? '' : ' min'}</Text>
           </Text>
         </View>
         <View style={{ flex: 1, backgroundColor: theme.accentDim, borderRadius: 12, padding: 10 }}>
