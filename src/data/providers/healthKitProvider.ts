@@ -226,7 +226,10 @@ function buildDay(
   // asleep; 0 therefore means "no pre-sleep data", which the UI shows as "—".
   const inBeds = nightAll.filter(s => isInBed(s.value));
   const nightFirst = prim.length ? Math.min(...prim.map(s => s.start)) : firstAsleep;
-  const bedStart = inBeds.length ? Math.min(...inBeds.map(s => s.start)) : nightFirst;
+  // An In Bed record from another source (sleep schedule, other apps) can
+  // disagree with the watch's asleep samples; bedtime must never be later
+  // than the first recorded sleep, so take the earliest of both.
+  const bedStart = inBeds.length ? Math.min(Math.min(...inBeds.map(s => s.start)), nightFirst) : nightFirst;
   const wakeEnd = lastAsleep > -Infinity ? lastAsleep : Math.max(...prim.map(s => s.end));
   const bedtimeMs = Number.isFinite(bedStart) ? bedStart : nightAll[0].start;
   const lightsOffMinutes = Number.isFinite(firstAsleep) && firstAsleep > bedtimeMs ? toMin(firstAsleep - bedtimeMs) : 0;
