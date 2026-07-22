@@ -122,15 +122,19 @@ export default function HistoryScreen() {
                     <Text style={{ fontSize: 11, color: theme.textDim }}>
                       {d.bedtime} – {d.wakeTime} · {formatMinutes(d.totalMinutes)}
                     </Text>
-                    {d.note ? (
-                      <Text style={{ fontSize: 10, color: theme.textMuted, marginTop: 2, fontStyle: 'italic' }}>
-                        {d.note}
-                      </Text>
-                    ) : null}
-                    {d.tags.length > 0 ? (
-                      <Text style={{ fontSize: 11, marginTop: 3 }}>
-                        {d.tags.slice(0, 5).map(t => t.icon).join(' ')}
-                      </Text>
+                    {d.note || d.tags.length > 0 ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        {d.note ? (
+                          <Text numberOfLines={1} ellipsizeMode="tail" style={{ flexShrink: 1, fontSize: 10, color: theme.textMuted, fontStyle: 'italic' }}>
+                            {d.note}
+                          </Text>
+                        ) : null}
+                        {d.tags.length > 0 ? (
+                          <Text numberOfLines={1} style={{ fontSize: 11 }}>
+                            {d.tags.slice(0, 5).map(t => t.icon).join(' ')}
+                          </Text>
+                        ) : null}
+                      </View>
                     ) : null}
                   </View>
                 </View>
