@@ -96,7 +96,7 @@ export default function HistoryScreen() {
               {[
                 { label: 'Deep', color: theme.deepColor },
                 { label: 'REM', color: theme.remColor },
-                { label: 'Light', color: theme.lightColor },
+                { label: 'Core', color: theme.lightColor },
               ].map(l => (
                 <View key={l.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <View style={{ width: 7, height: 7, borderRadius: 2, backgroundColor: l.color }} />

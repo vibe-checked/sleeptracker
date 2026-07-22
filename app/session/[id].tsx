@@ -114,7 +114,7 @@ export default function SessionDetailScreen() {
               { label: 'Efficiency', value: `${day.efficiency}%`, color: theme.ring3 },
               { label: 'Deep', value: formatMinutes(day.deepMinutes), color: theme.deepColor },
               { label: 'REM', value: formatMinutes(day.remMinutes), color: theme.remColor },
-              { label: 'Light', value: formatMinutes(day.lightMinutes), color: theme.lightColor },
+              { label: 'Core', value: formatMinutes(day.lightMinutes), color: theme.lightColor },
             ].map((m, i) => (
               <Animated.View
                 key={m.label}

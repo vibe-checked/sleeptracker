@@ -10,7 +10,7 @@ interface Props {
   width?: number;
 }
 
-const stageLabels = ['Deep', 'Light', 'REM', 'Awake'];
+const stageLabels = ['Deep', 'Core', 'REM', 'Awake'];
 const stageYMap: Record<number, number> = { 0: 0.1, 1: 0.35, 2: 0.65, 3: 0.9 };
 
 export default function SleepStageGraph({ stages, theme, width: propWidth }: Props) {
@@ -114,7 +114,7 @@ export default function SleepStageGraph({ stages, theme, width: propWidth }: Pro
         {[
           { label: 'Awake', color: theme.awakeColor },
           { label: 'REM', color: theme.remColor },
-          { label: 'Light', color: theme.lightColor },
+          { label: 'Core', color: theme.lightColor },
           { label: 'Deep', color: theme.deepColor },
           { label: 'HR', color: theme.hrColor, line: true },
         ].map(item => (

@@ -25,7 +25,7 @@ import type { NoiseSample, SnoringSample } from '../../src/data/types';
 const STAGE_INFO: Record<number, { label: string; emoji: string }> = {
   0: { label: 'Awake', emoji: '👁️' },
   1: { label: 'REM', emoji: '💭' },
-  2: { label: 'Light', emoji: '🌤️' },
+  2: { label: 'Core', emoji: '🌤️' },
   3: { label: 'Deep', emoji: '🌊' },
 };
 
