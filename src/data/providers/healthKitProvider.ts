@@ -13,6 +13,7 @@ import {
 } from '@kingstinct/react-native-healthkit';
 import type { SleepDay, SleepStage, HealthMetrics } from '../types';
 import {
+  emojiForRating,
   computeRating,
   computeSleepFuel,
   computeReadiness,
@@ -300,7 +301,7 @@ function buildDay(
     sleepFuel,
     lightsOffMinutes,
     priorDayStress: 0, // not measurable from sleep data; UI shows resting HR instead
-    emoji: rating >= 80 ? '😌' : rating >= 60 ? '🙂' : '🥱',
+    emoji: emojiForRating(rating),
     note: '',
     tags: [],
     apnea: { events: [], ahi: 0, riskScore: 0 },

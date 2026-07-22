@@ -9,6 +9,7 @@ import type {
 } from '../types';
 import { TAG_LIBRARY } from '../types';
 import {
+  emojiForRating,
   countStageMinutes,
   computeEfficiency,
   computeRating,
@@ -190,7 +191,7 @@ export function generateDay(daysAgo: number): SleepDay {
     sleepFuel,
     lightsOffMinutes,
     priorDayStress,
-    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+    emoji: emojiForRating(rating),
     note: notes[Math.floor(Math.random() * notes.length)],
     tags: pickTags(priorDayStress, lightsOffMinutes),
     apnea: generateApnea(stages, spo2),

@@ -91,6 +91,16 @@ export function recomputeDerived(day: SleepDay): SleepDay {
   return { ...day, rating, sleepFuel, readiness };
 }
 
+// One emoji scale for every night, tied directly to the rating.
+export function emojiForRating(rating: number): string {
+  if (rating >= 90) return '🤩';
+  if (rating >= 80) return '😊';
+  if (rating >= 70) return '🙂';
+  if (rating >= 60) return '😐';
+  if (rating >= 45) return '🥱';
+  return '😫';
+}
+
 export function formatMinutes(min: number): string {
   const h = Math.floor(min / 60);
   const m = Math.round(min % 60);

@@ -1,5 +1,5 @@
 import type { SleepDay, LiveSession, SleepStage, NoiseSample, SnoringSample } from './types';
-import { recomputeDerived, computeEfficiency } from './derive';
+import { recomputeDerived, computeEfficiency, emojiForRating } from './derive';
 import { mockProvider, makeId } from './providers/mockProvider';
 import type { SleepDataSource } from './providers/SleepDataSource';
 import { load, save, KEYS } from './persistence';
@@ -166,5 +166,6 @@ export function synthesizeFromLive(live: LiveSession, endedAt: number, extra: Tr
     noise,
     snoring,
   };
-  return recomputeDerived(base);
+  const day = recomputeDerived(base);
+  return { ...day, emoji: emojiForRating(day.rating) };
 }
