@@ -40,14 +40,34 @@ export function computeEfficiency(totalMin: number, awakeMin: number): number {
   return Math.round((totalMin / (totalMin + awakeMin)) * 100);
 }
 
-// Sleep rating out of 100: efficiency (45), deep sleep vs the ~90-min adult
-// norm (30), REM vs the ~105-min norm (25). Each component is capped so a
-// genuinely great night scores ~100 and an average one lands in the 70s-80s.
-export function computeRating(efficiency: number, deepMin: number, remMin: number, totalMin: number, jitter = 0): number {
+// Sleep rating out of 100, built from clinical norms so every point is
+// defensible: duration vs the 7h adult minimum (30), deep sleep vs the
+// 13-23% band (20), REM vs the 18-28% band (20), efficiency vs the 85%
+// clinical threshold (20), and fragmentation — awake share of the night (10).
+// Stage percentages use bands of the night rather than fixed minutes so
+// shorter sleepers aren't double-punished; exceeding a band isn't penalized.
+export function computeRating(
+  efficiency: number,
+  deepMin: number,
+  remMin: number,
+  totalMin: number,
+  awakeMin = 0,
+  jitter = 0
+): number {
   if (totalMin === 0) return 0;
-  const deepScore = Math.min(deepMin / 90, 1) * 30;
-  const remScore = Math.min(remMin / 105, 1) * 25;
-  return Math.max(0, Math.min(100, Math.round(efficiency * 0.45 + deepScore + remScore + jitter)));
+  const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
+  // Duration: 0 pts at <=3h, full 30 at >=7h.
+  const duration = clamp01((totalMin - 180) / 240) * 30;
+  // Deep: full 20 inside/above the 13% floor of the night.
+  const deep = clamp01(deepMin / totalMin / 0.13) * 20;
+  // REM: full 20 inside/above the 18% floor of the night.
+  const rem = clamp01(remMin / totalMin / 0.18) * 20;
+  // Efficiency: full 20 at >=85%, scaling from 60%.
+  const eff = clamp01((efficiency - 60) / 25) * 20;
+  // Fragmentation: full 10 when awake <=5% of the night, 0 at >=20%.
+  const awakeFrac = awakeMin / (totalMin + awakeMin);
+  const frag = clamp01((0.2 - awakeFrac) / 0.15) * 10;
+  return Math.max(0, Math.min(100, Math.round(duration + deep + rem + eff + frag + jitter)));
 }
 
 export function computeSleepFuel(efficiency: number, deepMin: number, remMin: number): number {
@@ -83,8 +103,8 @@ export function computeReadiness(
 // are preserved exactly — important so editing a HealthKit night keeps its
 // precise, Apple-Health-matching durations.
 export function recomputeDerived(day: SleepDay): SleepDay {
-  const { efficiency, deepMinutes, remMinutes, totalMinutes } = day;
-  const rating = computeRating(efficiency, deepMinutes, remMinutes, totalMinutes);
+  const { efficiency, deepMinutes, remMinutes, totalMinutes, awakeMinutes } = day;
+  const rating = computeRating(efficiency, deepMinutes, remMinutes, totalMinutes, awakeMinutes);
   const sleepFuel = computeSleepFuel(efficiency, deepMinutes, remMinutes);
   const recovery = computeRecovery(day.health.hrv, efficiency);
   const readiness = computeReadiness(sleepFuel, recovery, efficiency);

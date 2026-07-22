@@ -266,7 +266,7 @@ function buildDay(
 
   const timeInBed = Math.max(totalMinutes + awakeMinutes, toMin(wakeEnd - bedtimeMs));
   const efficiency = timeInBed > 0 ? Math.round((totalMinutes / timeInBed) * 100) : 0;
-  const rating = computeRating(efficiency, deepMinutes, remMinutes, totalMinutes);
+  const rating = computeRating(efficiency, deepMinutes, remMinutes, totalMinutes, awakeMinutes);
   const sleepFuel = computeSleepFuel(efficiency, deepMinutes, remMinutes);
   const recovery = computeRecovery(health.hrv, efficiency);
   const readiness = computeReadiness(sleepFuel, recovery, efficiency);
