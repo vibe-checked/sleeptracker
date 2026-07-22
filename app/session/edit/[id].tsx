@@ -113,16 +113,14 @@ export default function SessionEditScreen() {
     <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }}>
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
-          {/* Header */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <View>
-              <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600' }}>Edit Session</Text>
-              <Text style={{ fontSize: 24, fontWeight: '700', color: theme.text, marginTop: 2 }}>{day.dayLabel}, {day.date}</Text>
-            </View>
-            <Pressable onPress={() => router.back()} style={({ pressed }) => ({ height: 36, borderRadius: 18, paddingHorizontal: 14, backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 4, opacity: pressed ? 0.7 : 1 })}>
+          {/* Header — iOS convention: Back at the top-left leading edge */}
+          <View style={{ marginBottom: 20 }}>
+            <Pressable onPress={() => router.back()} style={({ pressed }) => ({ alignSelf: 'flex-start', height: 36, borderRadius: 18, paddingHorizontal: 14, backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 4, marginBottom: 12, opacity: pressed ? 0.7 : 1 })}>
               <Text style={{ color: theme.accent, fontSize: 17, fontWeight: '700', marginTop: -1 }}>‹</Text>
               <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>Back</Text>
             </Pressable>
+            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600' }}>Edit Session</Text>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: theme.text, marginTop: 2 }}>{day.dayLabel}, {day.date}</Text>
           </View>
 
           {/* Times */}

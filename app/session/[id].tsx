@@ -43,32 +43,9 @@ export default function SessionDetailScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         >
-          {/* Header */}
-          <Animated.View entering={FadeInUp.duration(400)} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <View>
-              <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600' }}>
-                Sleep Session
-              </Text>
-              <Text style={{ fontSize: 24, fontWeight: '700', color: theme.text, marginTop: 2 }}>
-                {day.dayLabel}, {day.date}
-              </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, alignSelf: 'flex-start', paddingVertical: 3, paddingHorizontal: 8, borderRadius: 10, backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder }}>
-                <Text style={{ fontSize: 11 }}>{sourceLabel(day).icon}</Text>
-                <Text style={{ fontSize: 11, color: theme.textDim, fontWeight: '600' }}>{sourceLabel(day).label}</Text>
-              </View>
-            </View>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Pressable
-                onPress={() => router.push(`/session/edit/${day.id}`)}
-                style={{
-                  height: 36, borderRadius: 18, paddingHorizontal: 14,
-                  backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder,
-                  alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 5,
-                }}
-              >
-                <Text style={{ fontSize: 13 }}>✏️</Text>
-                <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>Edit</Text>
-              </Pressable>
+          {/* Header — iOS convention: Back at the top-left leading edge */}
+          <Animated.View entering={FadeInUp.duration(400)} style={{ marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <Pressable
                 onPress={() => router.back()}
                 style={({ pressed }) => ({
@@ -81,6 +58,28 @@ export default function SessionDetailScreen() {
                 <Text style={{ color: theme.accent, fontSize: 17, fontWeight: '700', marginTop: -1 }}>‹</Text>
                 <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>Back</Text>
               </Pressable>
+              <Pressable
+                onPress={() => router.push(`/session/edit/${day.id}`)}
+                style={({ pressed }) => ({
+                  height: 36, borderRadius: 18, paddingHorizontal: 14,
+                  backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder,
+                  alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 5,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text style={{ fontSize: 13 }}>✏️</Text>
+                <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>Edit</Text>
+              </Pressable>
+            </View>
+            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600' }}>
+              Sleep Session
+            </Text>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: theme.text, marginTop: 2 }}>
+              {day.dayLabel}, {day.date}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, alignSelf: 'flex-start', paddingVertical: 3, paddingHorizontal: 8, borderRadius: 10, backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder }}>
+              <Text style={{ fontSize: 11 }}>{sourceLabel(day).icon}</Text>
+              <Text style={{ fontSize: 11, color: theme.textDim, fontWeight: '600' }}>{sourceLabel(day).label}</Text>
             </View>
           </Animated.View>
 
