@@ -6,8 +6,7 @@ import { useTheme } from '../../src/themes/ThemeContext';
 // Native SF Symbols render reliably on iOS (unlike obscure Unicode glyphs).
 const SYMBOLS: Record<string, SFSymbol> = {
   Today: 'sun.max.fill',
-  Clock: 'moon.stars.fill',
-  Explore: 'chart.line.uptrend.xyaxis',
+  Trends: 'chart.line.uptrend.xyaxis',
   History: 'calendar',
   Settings: 'gearshape.fill',
 };
@@ -55,17 +54,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="clock"
-        options={{
-          title: 'Clock',
-          tabBarIcon: ({ focused, color }) => <TabIcon label="Clock" focused={focused} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ focused, color }) => <TabIcon label="Explore" focused={focused} color={color} />,
+          title: 'Trends',
+          tabBarIcon: ({ focused, color }) => <TabIcon label="Trends" focused={focused} color={color} />,
         }}
       />
       <Tabs.Screen

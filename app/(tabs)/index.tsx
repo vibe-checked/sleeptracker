@@ -6,10 +6,8 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import SleepRings from '../../src/components/SleepRings';
 import ReadinessCard from '../../src/components/ReadinessCard';
-import SleepConsistency from '../../src/components/SleepConsistency';
 import SleepStageGraph from '../../src/components/SleepStageGraph';
 import HealthCards from '../../src/components/HealthCards';
-import SleepBank from '../../src/components/SleepBank';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
 import { formatMinutes, getTonightBedtime, computeRecovery } from '../../src/data/mockData';
@@ -210,6 +208,13 @@ export default function TodayScreen() {
                 <Text style={{ fontSize: 12, color: theme.textDim, fontStyle: 'italic' }}>"{today.note}"</Text>
               </View>
             ) : null}
+
+            <Pressable
+              onPress={() => router.push(`/session/${today.id}`)}
+              style={({ pressed }) => ({ marginTop: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.cardBorder, backgroundColor: theme.accentDim, alignItems: 'center', opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '600', color: theme.accent }}>View Full Session ›</Text>
+            </Pressable>
           </Card>
 
           <View style={{ height: 16 }} />
@@ -223,9 +228,24 @@ export default function TodayScreen() {
           />
 
           <View style={{ height: 16 }} />
-          <SleepConsistency />
-
-          <View style={{ height: 16 }} />
+          {/* Tonight: the actionable plan for the night ahead */}
+          <Card delay={180}>
+            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 12 }}>
+              Tonight
+            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Suggested Bedtime</Text>
+                <Text style={{ fontSize: 22, fontWeight: '700', color: theme.accent }}>{tonightBedtime}</Text>
+              </View>
+              <View style={{ flex: 1, alignItems: 'center', borderLeftWidth: 1, borderLeftColor: theme.cardBorder }}>
+                <Text style={{ fontSize: 10, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Smart Alarm</Text>
+                <Text style={{ fontSize: 22, fontWeight: '700', color: theme.ring2 }}>
+                  {smartAlarm.enabled ? `${smartAlarm.wakeHour % 12 || 12}:${smartAlarm.wakeMin.toString().padStart(2, '0')} ${smartAlarm.wakeHour >= 12 ? 'PM' : 'AM'}` : 'Off'}
+                </Text>
+              </View>
+            </View>
+          </Card>
 
           <View style={{ height: 16 }} />
           <Card delay={200}>
@@ -240,9 +260,6 @@ export default function TodayScreen() {
             Health Metrics
           </Text>
           <HealthCards health={today.health} />
-
-          <View style={{ height: 16 }} />
-          <SleepBank />
         </ScrollView>
       </SafeAreaView>
     </View>

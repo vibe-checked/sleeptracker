@@ -5,6 +5,9 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import Card from '../../src/components/Card';
+import SleepConsistency from '../../src/components/SleepConsistency';
+import SleepBank from '../../src/components/SleepBank';
+import SleepRings from '../../src/components/SleepRings';
 import LineChart from '../../src/components/LineChart';
 import ScatterChart from '../../src/components/ScatterChart';
 import CalendarHeatmap from '../../src/components/CalendarHeatmap';
@@ -23,7 +26,7 @@ const METRICS = [
 export default function ExploreScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { sessions, loading } = useSleepData();
+  const { sessions, goals, loading } = useSleepData();
   const { width: screenWidth } = useWindowDimensions();
   const chartWidth = Math.max(220, Math.min(screenWidth - 72, 460));
   const [metricKey, setMetricKey] = useState<string>('total');
@@ -62,7 +65,7 @@ export default function ExploreScreen() {
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
           <Animated.View entering={FadeInUp.duration(500)} style={{ marginBottom: 20 }}>
             <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 2, textTransform: 'uppercase', fontWeight: '600' }}>SleepTracker</Text>
-            <Text style={{ fontSize: 26, fontWeight: '700', color: theme.text, marginTop: 2 }}>Explore</Text>
+            <Text style={{ fontSize: 26, fontWeight: '700', color: theme.text, marginTop: 2 }}>Trends</Text>
           </Animated.View>
 
           {/* This week vs last week */}
@@ -111,6 +114,33 @@ export default function ExploreScreen() {
               })}
             </View>
             <LineChart values={series} labels={labels} width={chartWidth} theme={theme} unitLabel={metric.fmt} />
+          </Card>
+
+          <View style={{ height: 16 }} />
+          <SleepConsistency />
+
+          <View style={{ height: 16 }} />
+          <SleepBank />
+
+          <View style={{ height: 16 }} />
+
+          {/* Weekly rings — one mini ring set per night */}
+          <Card delay={180}>
+            <SectionTitle>Weekly Rings</SectionTitle>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+              {sessions.slice(-7).map((day, i) => (
+                <View key={day.id} style={{ alignItems: 'center' }}>
+                  <SleepRings
+                    sleepPercent={Math.round((day.totalMinutes / goals.sleepGoal) * 100)}
+                    qualityPercent={day.rating}
+                    deepPercent={Math.round((day.deepMinutes / goals.deepGoal) * 100)}
+                    theme={theme}
+                    size={42}
+                  />
+                  <Text style={{ fontSize: 9, color: theme.textMuted, marginTop: 3 }}>{day.dayLabel}</Text>
+                </View>
+              ))}
+            </View>
           </Card>
 
           <View style={{ height: 16 }} />
