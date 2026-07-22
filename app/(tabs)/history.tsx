@@ -1,46 +1,30 @@
 import React from 'react';
-import { ScrollView, View, Text, Pressable, useWindowDimensions } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import Card from '../../src/components/Card';
-import BarChart from '../../src/components/BarChart';
 import { useTheme } from '../../src/themes/ThemeContext';
 import { formatMinutes, sourceLabel } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
 
+// List-first history: the sessions ARE the content. A slim averages strip up
+// top, every night tappable right below it; trends live on the Explore tab.
 export default function HistoryScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const { sessions, loading } = useSleepData();
-  const { width: screenWidth } = useWindowDimensions();
-  const chartWidth = Math.max(200, Math.min(screenWidth - 72, 450));
 
   if (loading || sessions.length === 0) {
     return <LinearGradient colors={theme.bgGradientColors} style={{ flex: 1 }} />;
   }
 
-  // Charts show the most recent 14 nights; stats/list use those too.
-  const sleepHistory = sessions.slice(-14);
-  const avgTotal = Math.round(sleepHistory.reduce((s, d) => s + d.totalMinutes, 0) / sleepHistory.length);
-  const avgRating = Math.round(sleepHistory.reduce((s, d) => s + d.rating, 0) / sleepHistory.length);
-  const avgDeep = Math.round(sleepHistory.reduce((s, d) => s + d.deepMinutes, 0) / sleepHistory.length);
-
-  const stackedData = sleepHistory.map(d => ({
-    label: d.dayLabel,
-    segments: [
-      { value: d.deepMinutes, color: theme.deepColor },
-      { value: d.remMinutes, color: theme.remColor },
-      { value: d.lightMinutes, color: theme.lightColor },
-    ],
-  }));
-
-  const ratingData = sleepHistory.map(d => ({
-    label: d.dayLabel,
-    value: d.rating,
-    color: d.rating >= 80 ? theme.positive : d.rating >= 60 ? theme.accent : theme.negative,
-  }));
+  const recent14 = sessions.slice(-14);
+  const avgTotal = Math.round(recent14.reduce((s, d) => s + d.totalMinutes, 0) / recent14.length);
+  const avgRating = Math.round(recent14.reduce((s, d) => s + d.rating, 0) / recent14.length);
+  const avgDeep = Math.round(recent14.reduce((s, d) => s + d.deepMinutes, 0) / recent14.length);
+  const allNights = [...sessions].reverse();
 
   return (
     <View style={{ flex: 1, height: '100%' }}>
@@ -51,88 +35,80 @@ export default function HistoryScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         >
-          <Animated.View entering={FadeInUp.duration(500)} style={{ marginBottom: 20 }}>
-            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 2, textTransform: 'uppercase', fontWeight: '600' }}>
-              SleepTracker
-            </Text>
-            <Text style={{ fontSize: 26, fontWeight: '700', color: theme.text, marginTop: 2 }}>
-              Sleep History
-            </Text>
+          <Animated.View entering={FadeInUp.duration(500)} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 14 }}>
+            <View>
+              <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 2, textTransform: 'uppercase', fontWeight: '600' }}>
+                SleepTracker
+              </Text>
+              <Text style={{ fontSize: 26, fontWeight: '700', color: theme.text, marginTop: 2 }}>
+                Sleep History
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => router.push('/explore')}
+              style={({ pressed }) => ({
+                paddingVertical: 7, paddingHorizontal: 12, borderRadius: 12, marginBottom: 3,
+                backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Text style={{ fontSize: 12, fontWeight: '600', color: theme.accent }}>View Trends ›</Text>
+            </Pressable>
           </Animated.View>
 
-          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+          {/* Slim 14-night averages strip */}
+          <Animated.View
+            entering={FadeInUp.delay(50).duration(400)}
+            style={{
+              flexDirection: 'row',
+              backgroundColor: theme.cardBg,
+              borderColor: theme.cardBorder,
+              borderWidth: 1,
+              borderRadius: 14,
+              paddingVertical: 10,
+              marginBottom: 14,
+            }}
+          >
             {[
               { label: 'Avg Sleep', value: formatMinutes(avgTotal), color: theme.ring1 },
               { label: 'Avg Rating', value: `${avgRating}%`, color: theme.ring2 },
               { label: 'Avg Deep', value: formatMinutes(avgDeep), color: theme.ring3 },
             ].map((stat, i) => (
-              <Animated.View
+              <View
                 key={stat.label}
-                entering={FadeInUp.delay(i * 100).duration(400)}
                 style={{
                   flex: 1,
-                  backgroundColor: theme.cardBg,
-                  borderColor: theme.cardBorder,
-                  borderWidth: 1,
-                  borderRadius: 16,
-                  padding: 12,
                   alignItems: 'center',
+                  borderLeftWidth: i > 0 ? 1 : 0,
+                  borderLeftColor: theme.cardBorder,
                 }}
               >
-                <Text style={{ fontSize: 9, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>
+                <Text style={{ fontSize: 9, color: theme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>
                   {stat.label}
                 </Text>
-                <Text style={{ fontSize: 20, fontWeight: '700', color: stat.color }}>{stat.value}</Text>
-              </Animated.View>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: stat.color }}>{stat.value}</Text>
+              </View>
             ))}
-          </View>
+          </Animated.View>
 
-          <Card delay={150}>
-            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 8 }}>
-              Sleep Duration — 14 Days
-            </Text>
-            <BarChart data={stackedData} width={chartWidth} height={200} theme={theme} stacked />
-            <View style={{ flexDirection: 'row', gap: 14, justifyContent: 'center', marginTop: 8 }}>
-              {[
-                { label: 'Deep', color: theme.deepColor },
-                { label: 'REM', color: theme.remColor },
-                { label: 'Core', color: theme.lightColor },
-              ].map(l => (
-                <View key={l.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <View style={{ width: 7, height: 7, borderRadius: 2, backgroundColor: l.color }} />
-                  <Text style={{ fontSize: 10, color: theme.textDim }}>{l.label}</Text>
-                </View>
-              ))}
-            </View>
-          </Card>
-
-          <View style={{ height: 16 }} />
-
-          <Card delay={250}>
-            <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 8 }}>
-              Sleep Rating Trend
-            </Text>
-            <BarChart data={ratingData} width={chartWidth} height={140} theme={theme} />
-          </Card>
-
-          <View style={{ height: 16 }} />
-
-          <Card delay={350}>
+          {/* The list is the page: every night, newest first */}
+          <Card delay={100}>
             <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600', marginBottom: 10 }}>
-              Recent Sessions
+              All Nights
             </Text>
-            {sleepHistory.slice(-7).reverse().map((d, i) => (
+            {allNights.map((d, i) => (
               <Pressable
                 key={d.id}
                 onPress={() => router.push(`/session/${d.id}`)}
-                style={{
+                style={({ pressed }) => ({
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   paddingVertical: 12,
-                  borderBottomWidth: i < 6 ? 1 : 0,
+                  borderBottomWidth: i < allNights.length - 1 ? 1 : 0,
                   borderBottomColor: theme.cardBorder,
-                }}
+                  opacity: pressed ? 0.6 : 1,
+                })}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
                   <Text style={{ fontSize: 18 }}>{d.emoji}</Text>
