@@ -32,16 +32,15 @@ const notes = [
   'Stressed from work', 'Great recovery', '', '', '', '',
 ];
 
-function generateStages(bedHour: number, wakeHour: number): SleepStage[] {
+function generateStages(bedHour: number, bedMin: number, totalSlots: number): SleepStage[] {
   const stages: SleepStage[] = [];
-  const totalHours = wakeHour > bedHour ? wakeHour - bedHour : 24 - bedHour + wakeHour;
-  const totalSlots = totalHours * 4;
   let currentStage = 0;
   const cycleLength = 24;
 
   for (let i = 0; i < totalSlots; i++) {
-    const hour = (bedHour + Math.floor(i / 4)) % 24;
-    const min = (i % 4) * 15;
+    const t = bedHour * 60 + bedMin + i * 15;
+    const hour = Math.floor(t / 60) % 24;
+    const min = t % 60;
     const time = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
     const progress = i / totalSlots;
     const cyclePhase = (i % cycleLength) / cycleLength;
@@ -139,7 +138,11 @@ export function generateDay(daysAgo: number): SleepDay {
   const wakeHour = 6 + Math.floor(Math.random() * 2);
   const wakeMin = Math.floor(Math.random() * 4) * 15;
 
-  const stages = generateStages(bedHour, wakeHour);
+  // Stage timeline covers the exact bed window (minutes included) so
+  // in-bed time always equals time asleep + awake — no phantom gaps.
+  let windowMin = wakeHour * 60 + wakeMin - (bedHour * 60 + bedMin);
+  if (windowMin <= 0) windowMin += 24 * 60;
+  const stages = generateStages(bedHour, bedMin, Math.round(windowMin / 15));
   const deepMin = countStageMinutes(stages, 3);
   const remMin = countStageMinutes(stages, 1);
   const lightMin = countStageMinutes(stages, 2);

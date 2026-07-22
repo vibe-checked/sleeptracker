@@ -11,7 +11,7 @@ import NoiseGraph from '../../src/components/NoiseGraph';
 import SnoringGraph from '../../src/components/SnoringGraph';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { formatMinutes, sourceLabel, computeRecovery } from '../../src/data/mockData';
+import { formatMinutes, sourceLabel, computeRecovery, bedWindowMinutes } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function SessionDetailScreen() {
@@ -110,7 +110,7 @@ export default function SessionDetailScreen() {
           {/* Metrics grid */}
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {[
-              { label: 'Total', value: formatMinutes(day.totalMinutes), color: theme.ring1 },
+              { label: 'Asleep', value: formatMinutes(day.totalMinutes), color: theme.ring1 },
               { label: 'Rating', value: `${day.rating}%`, color: theme.ring2 },
               { label: 'Efficiency', value: `${day.efficiency}%`, color: theme.ring3 },
               { label: 'Deep', value: formatMinutes(day.deepMinutes), color: theme.deepColor },
@@ -146,6 +146,7 @@ export default function SessionDetailScreen() {
               {[
                 { label: 'Bedtime', value: day.bedtime },
                 { label: 'Wake', value: day.wakeTime },
+                { label: 'In Bed', value: formatMinutes(bedWindowMinutes(day.bedtime, day.wakeTime)) },
                 { label: 'Awake', value: formatMinutes(day.awakeMinutes) },
               ].map(t => (
                 <View key={t.label} style={{ flex: 1, alignItems: 'center' }}>

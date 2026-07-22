@@ -121,6 +121,15 @@ export function emojiForRating(rating: number): string {
   return '😫';
 }
 
+// Minutes from bedtime to wake, handling past-midnight windows.
+export function bedWindowMinutes(bedtime: string, wakeTime: string): number {
+  const [bh, bm] = bedtime.split(':').map(Number);
+  const [wh, wm] = wakeTime.split(':').map(Number);
+  let diff = wh * 60 + (wm || 0) - (bh * 60 + (bm || 0));
+  if (diff <= 0) diff += 24 * 60;
+  return diff;
+}
+
 export function formatMinutes(min: number): string {
   const h = Math.floor(min / 60);
   const m = Math.round(min % 60);

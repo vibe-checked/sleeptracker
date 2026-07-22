@@ -10,7 +10,7 @@ import SleepStageGraph from '../../src/components/SleepStageGraph';
 import HealthCards from '../../src/components/HealthCards';
 import Card from '../../src/components/Card';
 import { useTheme } from '../../src/themes/ThemeContext';
-import { formatMinutes, getTonightBedtime, computeRecovery } from '../../src/data/mockData';
+import { formatMinutes, getTonightBedtime, computeRecovery, bedWindowMinutes } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
 
 export default function TodayScreen() {
@@ -79,7 +79,7 @@ export default function TodayScreen() {
   const tonightBedtime = getTonightBedtime(sessions, goals, smartAlarm);
 
   const stats = [
-    { label: 'Total Sleep', value: formatMinutes(today.totalMinutes), color: theme.ring1 },
+    { label: 'Time Asleep', value: formatMinutes(today.totalMinutes), color: theme.ring1 },
     { label: 'Sleep Rating', value: `${today.rating}%`, color: theme.ring2 },
     { label: 'Deep Sleep', value: formatMinutes(today.deepMinutes), color: theme.ring3 },
     { label: 'Core Sleep', value: formatMinutes(today.lightMinutes), color: theme.lightColor },
@@ -194,6 +194,7 @@ export default function TodayScreen() {
               {[
                 { label: 'Bedtime', value: today.bedtime },
                 { label: 'Wake', value: today.wakeTime },
+                { label: 'In Bed', value: formatMinutes(bedWindowMinutes(today.bedtime, today.wakeTime)) },
                 { label: 'Awake', value: formatMinutes(today.awakeMinutes) },
               ].map(item => (
                 <View key={item.label} style={{ flex: 1, alignItems: 'center' }}>

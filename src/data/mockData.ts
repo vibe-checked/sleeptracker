@@ -22,6 +22,7 @@ export {
   avgBedtime,
   exportSleepData,
   recomputeDerived,
+  bedWindowMinutes,
   computeRecovery,
   sourceLabel,
   DEFAULT_GOALS,
