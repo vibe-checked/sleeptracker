@@ -221,7 +221,9 @@ export function mergeHealthSessions(prev: SleepDay[], hk: SleepDay[]): SleepDay[
     const old = prevById.get(d.id);
     if (!old) return d;
     if (old.edited) return old; // user-adjusted nights win over re-imports
-    return { ...d, emoji: old.emoji || d.emoji, note: old.note || d.note, tags: old.tags.length ? old.tags : d.tags };
+    // note/tags are user content — carry them over. The emoji is auto-derived
+    // from the rating, so take the fresh one (edited nights returned above).
+    return { ...d, note: old.note || d.note, tags: old.tags.length ? old.tags : d.tags };
   });
   // Auto-merge duplicate nights: when a phone-tracked session covers the same
   // night as a Health/watch night, the watch keeps every metric it measures
