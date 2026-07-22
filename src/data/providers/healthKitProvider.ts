@@ -404,6 +404,23 @@ export async function startHealthBackgroundSync(onChange: () => void): Promise<(
   };
 }
 
+// Debug: dump the raw sleep samples of the last N hours as JSON so number
+// mismatches vs the Health app can be diagnosed from real data.
+export async function debugRawSleep(hours = 48): Promise<string> {
+  try {
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - hours * 3600 * 1000);
+    const res: any = await queryCategorySamples(SLEEP as any, { filter: { startDate, endDate }, limit: 0, ascending: true } as any);
+    const rows = (res ?? []).map((s: any) => ({
+      start: s.startDate, end: s.endDate, value: s.value,
+      src: srcKeyOf(s), name: s?.sourceRevision?.source?.name ?? '',
+    }));
+    return JSON.stringify(rows, null, 1);
+  } catch (e) {
+    return 'error: ' + String(e);
+  }
+}
+
 // Dev helper: seed the iOS Simulator's Health store with one realistic night so
 // the read path can be verified without an Apple Watch. No-op on failure.
 export async function seedHealthKitSampleNight(): Promise<boolean> {

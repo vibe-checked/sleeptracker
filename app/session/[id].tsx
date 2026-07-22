@@ -71,13 +71,15 @@ export default function SessionDetailScreen() {
               </Pressable>
               <Pressable
                 onPress={() => router.back()}
-                style={{
-                  width: 36, height: 36, borderRadius: 18,
-                  backgroundColor: theme.cardBg, borderWidth: 1, borderColor: theme.cardBorder,
-                  alignItems: 'center', justifyContent: 'center',
-                }}
+                style={({ pressed }) => ({
+                  height: 36, borderRadius: 18, paddingHorizontal: 14,
+                  backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder,
+                  alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 4,
+                  opacity: pressed ? 0.7 : 1,
+                })}
               >
-                <Text style={{ color: theme.textDim, fontSize: 16 }}>✕</Text>
+                <Text style={{ color: theme.accent, fontSize: 17, fontWeight: '700', marginTop: -1 }}>‹</Text>
+                <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>Back</Text>
               </Pressable>
             </View>
           </Animated.View>

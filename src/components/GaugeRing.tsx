@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { useFocusEffect } from 'expo-router';
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -32,7 +33,8 @@ export default function GaugeRing({ value, size, color, label, variant = 'ring' 
   const sw = isGauge ? 4 : 5;
   const progress = useSharedValue(0);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
+    progress.value = 0;
     progress.value = withDelay(
       300,
       withTiming(Math.min(value, 100) / 100, {
@@ -40,7 +42,8 @@ export default function GaugeRing({ value, size, color, label, variant = 'ring' 
         easing: Easing.bezier(0.22, 1, 0.36, 1),
       })
     );
-  }, [value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]));
 
   const animatedProps = useAnimatedProps(() => ({
     strokeDashoffset: arcLen - arcLen * progress.value,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, Alert } from 'react-native';
+import { ScrollView, View, Text, Pressable, Alert, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +10,7 @@ import { useTheme } from '../../src/themes/ThemeContext';
 import { themes, type ThemeName } from '../../src/themes/themes';
 import { exportSleepData, formatMinutes } from '../../src/data/mockData';
 import { useSleepData } from '../../src/data/SleepDataContext';
+import { debugRawSleep } from '../../src/data/providers/healthKitProvider';
 import type { SleepGoals } from '../../src/data/types';
 
 export default function SettingsScreen() {
@@ -174,6 +175,14 @@ export default function SettingsScreen() {
               <Text style={{ fontSize: 11, color: theme.textMuted, marginTop: 8, textAlign: 'center' }}>
                 Health data isn't available on this device.
               </Text>
+            )}
+            {healthAvailable && (
+              <Pressable
+                onPress={async () => { const j = await debugRawSleep(); Share.share({ message: j }); }}
+                style={{ paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', marginTop: 8 }}
+              >
+                <Text style={{ fontSize: 12, color: theme.textDim }}>Share Raw Sleep Data (for support)</Text>
+              </Pressable>
             )}
             {__DEV__ && healthAvailable && (
               <Pressable onPress={handleSeedHealth} disabled={healthBusy} style={{ paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', marginTop: 8 }}>

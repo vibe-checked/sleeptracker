@@ -119,8 +119,9 @@ export default function SessionEditScreen() {
               <Text style={{ fontSize: 11, color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: '600' }}>Edit Session</Text>
               <Text style={{ fontSize: 24, fontWeight: '700', color: theme.text, marginTop: 2 }}>{day.dayLabel}, {day.date}</Text>
             </View>
-            <Pressable onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.cardBg, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: theme.textDim, fontSize: 16 }}>✕</Text>
+            <Pressable onPress={() => router.back()} style={({ pressed }) => ({ height: 36, borderRadius: 18, paddingHorizontal: 14, backgroundColor: theme.accentDim, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 4, opacity: pressed ? 0.7 : 1 })}>
+              <Text style={{ color: theme.accent, fontSize: 17, fontWeight: '700', marginTop: -1 }}>‹</Text>
+              <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>Back</Text>
             </Pressable>
           </View>
 

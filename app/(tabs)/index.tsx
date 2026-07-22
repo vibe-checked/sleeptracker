@@ -84,6 +84,7 @@ export default function TodayScreen() {
     { label: 'Total Sleep', value: formatMinutes(today.totalMinutes), color: theme.ring1 },
     { label: 'Sleep Rating', value: `${today.rating}%`, color: theme.ring2 },
     { label: 'Deep Sleep', value: formatMinutes(today.deepMinutes), color: theme.ring3 },
+    { label: 'Core Sleep', value: formatMinutes(today.lightMinutes), color: theme.lightColor },
     { label: 'REM Sleep', value: formatMinutes(today.remMinutes), color: theme.remColor },
     { label: 'Efficiency', value: `${today.efficiency}%`, color: theme.accent },
   ];

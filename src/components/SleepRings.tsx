@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { useFocusEffect } from 'expo-router';
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -26,7 +27,11 @@ function Ring({ radius, percent, color, glowColor, strokeWidth, delay, center }:
   const circumference = 2 * Math.PI * radius;
   const progress = useSharedValue(0);
 
-  useEffect(() => {
+  // useFocusEffect instead of useEffect: rapid tab switches can cancel a
+  // mount-time animation and strand the ring at zero (dim track only);
+  // restarting on every focus keeps the rings bright.
+  useFocusEffect(useCallback(() => {
+    progress.value = 0;
     progress.value = withDelay(
       delay,
       withTiming(Math.min(percent, 100) / 100, {
@@ -34,7 +39,8 @@ function Ring({ radius, percent, color, glowColor, strokeWidth, delay, center }:
         easing: Easing.bezier(0.22, 1, 0.36, 1),
       })
     );
-  }, [percent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [percent]));
 
   const animatedProps = useAnimatedProps(() => ({
     strokeDashoffset: circumference - circumference * progress.value,
